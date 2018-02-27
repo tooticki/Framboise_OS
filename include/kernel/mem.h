@@ -18,9 +18,9 @@ typedef struct page {
   struct page * next; // Next free page in the linked list
 } page_t;
 
-void mem_init(atag_t * atags);
-void * alloc_page(void);
-void free_page(void * ptr);
+void mem_init(atag_t * atags); // Initializes the memory
+void * alloc_page(void);       // Allocates one free memory-page
+void free_page(void * ptr);    // Frees one memory-page
 
 
 // We use a linked list to store free memory slots

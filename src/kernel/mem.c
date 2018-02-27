@@ -1,5 +1,6 @@
 #include "kernel/mem.h"
 #include "kernel/atag.h"
+#include "common/stdlib.h"
 
 extern uint8_t __end;
 static uint32_t num_pages;
@@ -32,4 +33,35 @@ void mem_init(atag_t * atags) {
         push_last_free_page (&all_pages_array[i]);
     }
 
+}
+
+void * alloc_page(void) {
+    page_t * page;
+    void * page_mem;
+    if (num_free_pages == 0)
+        return 0;
+
+    // Get a free page
+    page = pop_free_page();
+    page->flags.kernel_page = 1;
+    page->flags.allocated = 1;
+
+    // Get the address the physical page metadata refers to
+    page_mem = (void *)((page - all_pages_array) * PAGE_SIZE);
+
+    // Zero out the page
+    bzero(page_mem, PAGE_SIZE);
+
+    return page_mem;
+}
+
+void free_page(void * ptr) {
+    page_t * page;
+
+    // Get page metadata from the physical address
+    page = all_pages_array + ((uint32_t)ptr / PAGE_SIZE);
+
+    // Mark the page as free
+    page->flags.allocated = 0;
+    push_last_free_page(page);
 }
