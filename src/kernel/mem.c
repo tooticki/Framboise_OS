@@ -1,13 +1,10 @@
 #include "kernel/mem.h"
+#include "kernel/atag.h"
 
 extern uint8_t __end;
 static uint32_t num_pages;
 
-DEFINE_LIST(page);
-IMPLEMENT_LIST(page);
-
 static page_t * all_pages_array;
-page_list_t free_pages;
 
 void mem_init(atag_t * atags) {
     uint32_t mem_size,  page_array_len, kernel_pages, i;
@@ -20,7 +17,6 @@ void mem_init(atag_t * atags) {
     page_array_len = sizeof(page_t) * num_pages;
     all_pages_array = (page_t *)&__end;
     bzero(all_pages_array, page_array_len);
-    INITIALIZE_LIST(free_pages);
 
     // Iterate over all pages and mark them with the appropriate flags
     // Start with kernel pages
@@ -33,7 +29,7 @@ void mem_init(atag_t * atags) {
     // Map the rest of the pages as unallocated, and add them to the free list
     for(; i < num_pages; i++){
         all_pages_array[i].flags.allocated = 0;
-        append_page_list(&free_pages, &all_pages_array[i]);
+        push_last_free_page (&all_pages_array[i]);
     }
 
 }
