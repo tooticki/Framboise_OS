@@ -4,19 +4,27 @@
 #include <common/stdio.h>
 #include <common/stdlib.h>
 
-int n = 226;
+int n = 5, N = 5;
 
 void memory_test(){
-  int* my_array = kmalloc(n);
-  putc (itoa(n)[0]);
-  putc (itoa(n)[1]);
-  putc (itoa(n)[2]);
-  puts(" are allocated\n");
-  for(int i = 0; i++; i<n){
-    my_array[i]=i;
+  int* my_array[N];
+  print_gen_memory_state();
+  for(int i = 0; i<N; i++){
+    my_array[i] = kmalloc(n);
+    puts(itoa(n));
+    puts(" bytes are allocated\n");
+    print_curr_memory_state();
+    for(int i = 0; i++; i<n){
+      my_array[i]=i;
+    }
   }
-  kfree (my_array);
-  puts("Memory is free\n");
+  for(int i = 0; i<N; i++){
+    print_curr_memory_state();
+    kfree (my_array[i]);
+    puts(itoa(n));
+    puts(" bytes are free back\n");
+  }
+  print_curr_memory_state();
 }
 
 void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags) // In ARM, the first three parameters of a function are passed through r0, r1 and r2

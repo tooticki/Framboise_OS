@@ -51,4 +51,8 @@ void push_last_free_page(page_t * p);  // Adds a page in the end of the list
 page_t * pop_free_page();              // Pops a page from the beginning of the list
 page_t * peek_free_page();             // Peeks a page from the beginning of the list
 
+// Printing memory state
+void print_curr_memory_state();
+void print_gen_memory_state();
+
 #endif

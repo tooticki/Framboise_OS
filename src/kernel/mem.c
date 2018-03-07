@@ -1,7 +1,7 @@
 #include "kernel/mem.h"
 #include "kernel/atag.h"
 #include "common/stdlib.h"
-
+#include "common/stdio.h"
 
   // Heap
 
@@ -15,35 +15,40 @@ static void heap_init(uint32_t heap_start) {
 }
 
 void * kmalloc(uint32_t size) {
-  heap_segment_t * curr, *tmp, *new_next, *best = first_heap_segment;
-  int currdiff, bestdiff;
+  heap_segment_t * curr, *tmp, *new_next, *best = 0;
+  int currdiff, bestdiff= 0x7fffffff; // Max signed int
   size+=head_size;                     // Add the segment header size to the needed ammount of memory
   if(size%16 !=0) size+=(16-size%16);  // Complete the size to be divisible by 16
 
   // Find the segment with the closest size
   if(first_heap_segment == 0) return 0; // No free memory
   
-  for(curr = first_heap_segment; curr->next != 0; curr = curr->next){
+  for(curr = first_heap_segment; curr != 0; curr = curr->next){
     currdiff = curr->segment_size - size;
-    if (currdiff > 0 && currdiff < bestdiff){
+    if(!curr->is_allocated && currdiff > 0 && currdiff < bestdiff){
       best = curr;
       bestdiff = currdiff;
     }
   }
 
+  if(best == 0){
+    return 0; // Didn't find a segment big enough
+  }
+  
   // If the best found segment is too large (exceeds the needed size by > head_size) , split it in two
   if(bestdiff > 2*head_size){
     tmp = best->next;
     new_next = ((void*)(best)) + size;
     bzero(new_next, head_size);
     best->next = new_next;
+    best->segment_size = size;
     new_next->next = tmp;
     new_next->prev = best;
     new_next->is_allocated = 0;
     new_next->segment_size = bestdiff;
   }
   best->is_allocated = 1;
-  return best + head_size;
+  return best + 1;
 }
 
 void kfree(void *ptr) {
@@ -141,43 +146,81 @@ page_t * peek_free_page(){ // Peeks a page from the beginning of the list
 }
 
 
-
-
   // Memory initialization
 
 void mem_init(atag_t * atags) {
-    uint32_t mem_size,  page_array_len, kernel_pages, i;
+  uint32_t mem_size, page_array_len, page_array_end, kernel_pages, i;
+  
+  // Get the total number of pages
+  mem_size = get_mem_size(atags);
+  num_pages = mem_size / PAGE_SIZE;
+  
+  // Allocate space for all those pages' metadata.  Start this block just after the kernel image is finished
+  page_array_len = sizeof(page_t) * num_pages;
+  all_pages_array = (page_t *)&__end;
+  bzero(all_pages_array, page_array_len);
 
-    // Get the total number of pages
-    mem_size = get_mem_size(atags);
-    num_pages = mem_size / PAGE_SIZE;
-
-    // Allocate space for all those pages' metadata.  Start this block just after the kernel image is finished
-    page_array_len = sizeof(page_t) * num_pages;
-    all_pages_array = (page_t *)&__end;
-    bzero(all_pages_array, page_array_len);
-
-    // Iterate over all pages and mark them with the appropriate flags
-    // Start with kernel pages
-    kernel_pages = ((uint32_t)&__end) / PAGE_SIZE;
-    for (i = 0; i < kernel_pages; i++) {
-        all_pages_array[i].vaddr_mapped = i * PAGE_SIZE;    // Identity map the kernel pages
-        all_pages_array[i].flags.allocated = 1;
-        all_pages_array[i].flags.kernel_heap_page = 1;
+  // Iterate over all pages and mark them with the appropriate flags
+  // Start with kernel pages
+  kernel_pages = ((uint32_t)&__end) / PAGE_SIZE;
+  for (i = 0; i < kernel_pages; i++) {
+    all_pages_array[i].vaddr_mapped = i * PAGE_SIZE;    // Identity map the kernel pages
+    all_pages_array[i].flags.allocated = 1;
+    all_pages_array[i].flags.kernel_heap_page = 1;
     }
+  
+  // Reserve 1 MB for the kernel heap
+  for(; i < kernel_pages + (KERNEL_HEAP_SIZE / PAGE_SIZE); i++){
+    all_pages_array[i].vaddr_mapped = i * PAGE_SIZE;    // Identity map the kernel pages
+    all_pages_array[i].flags.allocated = 1;
+    all_pages_array[i].flags.kernel_heap_page = 1;
+  }
     
-    // Reserve 1 MB for the kernel heap
-    for(; i < kernel_pages + (KERNEL_HEAP_SIZE / PAGE_SIZE); i++){
-        all_pages_array[i].vaddr_mapped = i * PAGE_SIZE;    // Identity map the kernel pages
-        all_pages_array[i].flags.allocated = 1;
-        all_pages_array[i].flags.kernel_heap_page = 1;
-    }
-    
-    // Map the rest of the pages as unallocated, and add them to the free list
-    for(; i < num_pages; i++){
-        all_pages_array[i].flags.allocated = 0;
-        push_last_free_page (&all_pages_array[i]);
-    }
+  // Map the rest of the pages as unallocated, and add them to the free list
+  for(; i < num_pages; i++){
+    all_pages_array[i].flags.allocated = 0;
+    push_last_free_page (&all_pages_array[i]);
+  }
+  
+  // Initialize the heap
+  page_array_end = (uint32_t)&__end + page_array_len;
+  heap_init(page_array_end);
 }
 
+
+   // Printing the state of memory for testing
+
+void print_gen_memory_state(){
+  // General information
+  puts("\n*** Memory information\n\n");
+  puts("  Size of the heap: ");
+  puts(itoa(KERNEL_HEAP_SIZE));
+  puts(" bytes\n");
+  puts("  Size of a page: ");
+  puts(itoa(PAGE_SIZE));
+  puts(" bytes\n");
+  puts("  Header size for a heap segment: ");
+  puts(itoa(head_size));
+  puts(" bytes\n");
+  puts("\n***End of memory informaiton\n\n");
+}
+
+void print_curr_memory_state(){
+  // Heap memory
+  heap_segment_t * curr;
+  puts("\n*** Current memory state\n\n");
+  
+  puts("  Heap segments:\n");
+  for(curr = first_heap_segment; curr != 0; curr = curr->next){
+    if(curr->is_allocated)
+      puts ("  - Allocated   ");
+    else
+      puts ("  - Free        ");    
+    puts("segment of size ");
+    puts(itoa(curr->segment_size));
+    puts(" bytes \n");
+  }
+  // Free pages
+  puts("\n*** End of current memory state\n\n");
+}
 
