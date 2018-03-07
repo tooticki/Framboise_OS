@@ -27,6 +27,6 @@ void gets(char * buf, int buflen){
         buf[i] = '\0';
     }
     else
-      buf[0] = '\0'; // Not sure
+      buf[i] = '\0'; // Not sure
 }
 
