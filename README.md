@@ -8,3 +8,6 @@ to run:
 
 to clean:
 make clean
+
+to test with a screen:
+remmina

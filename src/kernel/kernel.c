@@ -1,4 +1,5 @@
 #include <kernel/uart.h>
+#include <kernel/framebuffer.h>
 #include <kernel/mem.h>
 #include <kernel/atag.h>
 #include <common/stdio.h>
@@ -6,7 +7,7 @@
 
 int n = 5, N = 5;
 
-void memory_test(){
+void memory_test(){ // Test memory printing memory states
   int* my_array[N];
   print_gen_memory_state();
   for(int i = 0; i<N; i++){
@@ -14,9 +15,6 @@ void memory_test(){
     puts(itoa(n));
     puts(" bytes are allocated\n");
     print_curr_memory_state();
-    for(int i = 0; i++; i<n){
-      my_array[i]=i;
-    }
   }
   for(int i = 0; i<N; i++){
     print_curr_memory_state();
@@ -34,13 +32,18 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags) // In ARM, the first 
   (void) r0;
   (void) r1;
   (void) atags;
+
   
+  // With console-printing:
   uart_init();
-  
   puts("Initializing Memory Module\n");
   mem_init((atag_t *)atags);
-  puts("Running the Memory Test\n");
-  memory_test();
+  framebuffer_init();
+  orange_screen();
+  
+  //puts("Running the Memory Test\n");
+  // memory_test();
+  
   puts("Hello, kernel World!\r\n");
   
   while (1) {
