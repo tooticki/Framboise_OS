@@ -1,7 +1,7 @@
-#include <kernel/framebuffer.h>
-#include <kernel/mem.h>
-#include <kernel/mailbox.h>
-#include <kernel/uart.h>
+#include "framebuffer.h"
+#include "mem.h"
+#include "mailbox.h"
+#include "uart.h"
 
 fb_info_t fbinfo;
 

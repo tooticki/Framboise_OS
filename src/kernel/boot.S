@@ -4,11 +4,11 @@
 
 _start:
 	
-// sending 3 of 4 cores to halt
-    mrc p15, #0, r1, c0, c0, #5
-    and r1, r1, #3
-    cmp r1, #0
-    bne halt
+// ONLY FOR MODEL 2 !!!!!!! sending 3 of 4 cores to halt
+ //   mrc p15, #0, r1, c0, c0, #5
+ //   and r1, r1, #3
+ //   cmp r1, #0
+ //   bne halt
 // put the beginning of the C-stack (core starts at 0x8000) 
     mov sp, #0x8000
 

@@ -1,7 +1,7 @@
-#include "kernel/mem.h"
-#include "kernel/atag.h"
-#include "common/stdlib.h"
-#include "common/stdio.h"
+#include "mem.h"
+#include "atag.h"
+#include "../common/stdlib.h"
+#include "../common/stdio.h"
 
   // Heap
 

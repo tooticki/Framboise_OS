@@ -1,7 +1,7 @@
-#include <kernel/mailbox.h>
-#include <common/stdlib.h>
-#include <kernel/mem.h>
-#include <kernel/uart.h>
+#include "mailbox.h"
+#include "../common/stdlib.h"
+#include "mem.h"
+#include "uart.h"
 
 int mailbox_send(mailbox_message_t msg){
   uart_puts("    Sending a message\n");  // Debugging

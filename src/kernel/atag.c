@@ -1,4 +1,4 @@
-#include "kernel/atag.h"
+#include "atag.h"
 
 #define next_tag(t) ((uint32_t *) t) + t->hdr.size;
 

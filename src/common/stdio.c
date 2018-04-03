@@ -1,11 +1,11 @@
-#include <kernel/uart.h>
-#include <kernel/framebuffer.h>
-#include <common/stdio.h>
-#include <common/stdlib.h>
+#include "../kernel/uart.h"
+#include "../kernel/framebuffer.h"
+#include "stdio.h"
+#include "stdlib.h"
 
 
 void putc(char c){
-  fb_putc(c);
+  uart_putc(c);
 }
 void puts(const char * s){
   for (int i = 0; s[i] != '\0'; i++)

@@ -1,53 +1,56 @@
-# Don't use normal gcc, use the arm cross compiler
-CC = arm-none-eabi-gcc
-OBJCOPY = arm-none-eabi-objcopy
+# How to compile C or assembly? (Maybe remove -fpic -ffreestanding if things don't work.)
+CC=arm-none-eabi-gcc
+CFLAGS=-O2 -mfpu=vfp -mfloat-abi=hard -march=armv6zk -mtune=arm1176jzf-s -nostartfiles -fpic -ffreestanding -std=gnu99
 
-# Set any constants based on the raspberry pi model.  Version 1 has some differences to 2 and 3
-ifeq ($(RASPI_MODEL),1)
-    CPU = arm1176jzf-s
-    DIRECTIVES = -D MODEL_1
-else
-    CPU = cortex-a7
-endif
+# How to link several .o together? (When in doubt -> same flags that work for a single-file compile)
+LD=arm-none-eabi-gcc
+LDFLAGS=-O2 -mfpu=vfp -mfloat-abi=hard -march=armv6zk -mtune=arm1176jzf-s -nostartfiles -fpic -ffreestanding -std=gnu99
 
-CFLAGS= -mcpu=$(CPU) -fpic -ffreestanding -std=gnu99 $(DIRECTIVES)
-CSRCFLAGS= -O2 -Wall -Wextra
-LFLAGS= -ffreestanding -O2 -nostdlib
+# How to convert an ELF Linux executable to a bare bunch of machine code? (OC=ObjCopy)
+OC=arm-none-eabi-objcopy
+OCFLAGS=-O binary
 
-# Location of the files
-KER_SRC = ../src/kernel
-KER_HEAD = ../include
-COMMON_SRC = ../src/common
-OBJ_DIR = objects
-KERSOURCES = $(wildcard $(KER_SRC)/*.c)
-COMMONSOURCES = $(wildcard $(COMMON_SRC)/*.c)
-ASMSOURCES = $(wildcard $(KER_SRC)/*.S)
-OBJECTS = $(patsubst $(KER_SRC)/%.c, $(OBJ_DIR)/%.o, $(KERSOURCES))
-OBJECTS += $(patsubst $(COMMON_SRC)/%.c, $(OBJ_DIR)/%.o, $(COMMONSOURCES))
-OBJECTS += $(patsubst $(KER_SRC)/%.S, $(OBJ_DIR)/%.o, $(ASMSOURCES))
-HEADERS = $(wildcard $(KER_HEAD)/*.h)
+# What is the list of files we need to compile?
+# Replace '.' here with the top directory that contains all the sources
+# (typically the root of the project, relative to the makefile).
+C_SOURCES=$(shell find '../src' -name '*.c')
+ASM_SOURCES=$(shell find '../src' -name '*.S')
 
-IMG_NAME=kernel
+# What will we compile them into?
+C_OBJECTS=$(C_SOURCES:%.c=%.o)
+ASM_OBJECTS=$(ASM_SOURCES:%.S=%.o)
 
-build: $(OBJECTS) $(HEADERS)
-	echo $(OBJECTS)
-	$(CC) -T linker.ld -o $(IMG_NAME).img $(LFLAGS) $(OBJECTS)
+# What's the name of the final result?
+KERNEL=kernel
 
-$(OBJ_DIR)/%.o: $(KER_SRC)/%.c
-	mkdir -p $(@D)
-	$(CC) $(CFLAGS) -I$(KER_SRC) -I$(KER_HEAD) -c $< -o $@ $(CSRCFLAGS)
+# Now the rules. In those rules,
+# $@ == output
+# $< == first input (usually there is only one, so it's fine)
+# $^ == all the inputs, separated by spaces
+# The general format is:
+# OUTPUT: INPUTS
+# 	COMMAND
+#  /\
+# (this is a tab haracter, NOT spaces.)
 
-$(OBJ_DIR)/%.o: $(KER_SRC)/%.S
-	mkdir -p $(@D)
-	$(CC) $(CFLAGS) -I$(KER_SRC) -c $< -o $@
+# The first rule is selected by default if we just type "make".
+$(KERNEL).img: $(KERNEL).elf
+	$(OC) $< $(OCFLAGS) $@
 
-$(OBJ_DIR)/%.o: $(COMMON_SRC)/%.c
-	mkdir -p $(@D)
-	$(CC) $(CFLAGS) -I$(KER_SRC) -I$(KER_HEAD) -c $< -o $@ $(CSRCFLAGS)
+$(KERNEL).elf: $(C_OBJECTS) $(ASM_OBJECTS)
+	$(LD) $(LDFLAGS) $^ -o $@
 
+%.o:%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+%.o:%.S
+	$(CC) $(CFLAGS) -c $< -o $@
+
+terminal:
+	sudo screen /dev/ttyUSB0 115200
+
+
+# â€œcleanâ€ is not an actual output, but if we ask to generate â€œcleanâ€,
+# the command will remove all compiled files (including the kernel).
 clean:
-	rm -rf $(OBJ_DIR)
-	rm $(IMG_NAME).img $(IMG_NAME).elf
-
-run: build
-	qemu-system-arm -m 256 -M raspi2 -serial stdio -kernel kernel.img
+	rm -f $(ASM_OBJECTS) $(C_OBJECTS) $(KERNEL)

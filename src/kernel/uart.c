@@ -1,6 +1,6 @@
 #include <stddef.h>
 #include <stdint.h>
-#include <kernel/uart.h>
+#include "uart.h"
 
 // a register is 0x20000000 + peripheral base + register offset
 
