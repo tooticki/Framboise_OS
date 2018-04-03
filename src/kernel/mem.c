@@ -70,7 +70,7 @@ void kfree(void *ptr) {
 
   // Pages
     
-extern uint8_t __end;
+uint8_t __end;
 static uint32_t num_pages;
 
 static page_t * all_pages_array;

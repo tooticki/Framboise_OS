@@ -15,7 +15,7 @@ _start:
 // C global variables that are not initialized at compile time are stored in BSS
 // We should set all of them to 0
     ldr r4, =__bss_start
-    ldr r9, =__bss_end
+//    ldr r9, =__bss_end
     mov r5, #0
     mov r6, #0
     mov r7, #0
