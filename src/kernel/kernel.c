@@ -1,14 +1,14 @@
-#include "uart.h"
+/*#include "uart.h"
 #include "framebuffer.h"
 #include "mem.h"
 #include "atag.h"
 #include "../common/stdio.h"
 #include "../common/stdlib.h"
 
-// #include "blinker.h"
+ #include "blinker.h"
 
 int n = 5, N = 5;
-
+*/
 
 #define L_GPIO_BASE       0x20200000UL
 #define LED_GPFSEL      GPIO_GPFSEL4
