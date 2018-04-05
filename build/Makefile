@@ -4,7 +4,7 @@ CFLAGS=-O2 -mfpu=vfp -mfloat-abi=hard -march=armv6zk -mtune=arm1176jzf-s -nostar
 
 # How to link several .o together? (When in doubt -> same flags that work for a single-file compile)
 LD=arm-none-eabi-gcc
-LDFLAGS=-O2 -mfpu=vfp -mfloat-abi=hard -march=armv6zk -mtune=arm1176jzf-s -nostartfiles -fpic -ffreestanding -std=gnu99
+LDFLAGS=-ffreestanding -O2 -nostdlib   #-O2 -mfpu=vfp -mfloat-abi=hard -march=armv6zk -mtune=arm1176jzf-s -nostartfiles -fpic -ffreestanding -std=gnu99
 
 # How to convert an ELF Linux executable to a bare bunch of machine code? (OC=ObjCopy)
 OC=arm-none-eabi-objcopy
@@ -38,7 +38,8 @@ $(KERNEL).img: $(KERNEL).elf
 	$(OC) $< $(OCFLAGS) $@
 
 $(KERNEL).elf: $(C_OBJECTS) $(ASM_OBJECTS)
-	$(LD) $(LDFLAGS) $^ -o $@
+# 	$(LD) $(LDFLAGS) $^ -o $@
+	$(LD) -T linker.ld -o $@ $(LDFLAGS) $^
 
 %.o:%.c
 	$(CC) $(CFLAGS) -c $< -o $@

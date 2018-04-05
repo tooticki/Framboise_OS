@@ -1,7 +1,7 @@
 # Framboise_OS
 
 to build:
-   make build
+   make
 
 to run:
    make run
