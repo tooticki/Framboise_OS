@@ -1,5 +1,4 @@
-
-#define L_GPIO_BASE     0x20200000UL
+#define L_GPIO_BASE       0x20200000UL
 #define LED_GPFSEL      GPIO_GPFSEL4
 #define LED_GPFBIT      21
 #define LED_GPSET       GPIO_GPSET1
@@ -53,3 +52,5 @@ volatile unsigned int* gpio;
 
 /** Simple loop variable */
 volatile unsigned int tim;
+
+void blinker(int n);
