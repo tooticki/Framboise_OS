@@ -28,7 +28,7 @@ void uart_init()
 {
   uart_control_t control;
   // Disable UART0.
-  bzero(&control, 4);
+  bzero(UART0_CR, 4);
   mmio_write(UART0_CR, control.as_int);
   
   
@@ -51,17 +51,17 @@ void uart_init()
 
   mmio_write(UART0_LCRH, (1 << 4) | (1 << 5) | (1 << 6)); // Line control register: the UART hardware will hold data in an 8 item deep FIFO; data sent or received will have 8-bit long words
 
-  mmio_write(UART0_IMSC, (1 << 1) | (1 << 4) | (1 << 5) | (1 << 6) |
-	     (1 << 7) | (1 << 8) | (1 << 9) | (1 << 10)); // disables all interrupts from the UART by writing a one to the relevent bits of the Interrupt Mask Set Clear register
+  //mmio_write(UART0_IMSC, (1 << 1) | (1 << 4) | (1 << 5) | (1 << 6) |
+  //	     (1 << 7) | (1 << 8) | (1 << 9) | (1 << 10)); // disables all interrupts from the UART by writing a one to the relevent bits of the Interrupt Mask Set Clear register
 
-  // mmio_write(UART0_CR, (1 << 0) | (1 << 8) | (1 << 9)); //  enables the UART hardware; enables the ability to receive data; enables the ability to transmit data
+  mmio_write(UART0_CR, (1 << 0) | (1 << 8) | (1 << 9)); //  enables the UART hardware; enables the ability to receive data; enables the ability to transmit data
 
 
   // Enable UART0, receive & transfer part of UART.
-  control.uart_enabled = 1;
+  /* control.uart_enabled = 1;
   control.transmit_enabled = 1;
   control.receive_enabled = 1;
-  mmio_write(UART0_CR, control.as_int);;
+  mmio_write(UART0_CR, control.as_int);;*/
   
 }
 
@@ -77,11 +77,10 @@ void uart_putc(unsigned char c) // wraps up putc in a loop so we can write whole
 {
   uart_flags_t flags;
   // Wait for UART to become ready to transmit.
-  do {
-    flags = read_flags();
-  }
-  while ( flags.transmit_queue_full );
-  
+  while(1)
+    {
+      if((mmio_read(UART0_FR)&0x20)==0) break;
+    }
   mmio_write(UART0_DR, c); // Data Register
 } 
 
@@ -90,11 +89,10 @@ unsigned char uart_getc()
   uart_flags_t flags;
   // Wait for UART to become ready to transmit.
   
-  do {
-    flags = read_flags();
-  }
-  while ( flags.transmit_queue_full );
-  
+  while(1)
+    {
+      if((mmio_read(UART0_FR)&0x10)==0) break;
+    }
   return mmio_read(UART0_DR);
 }
 
