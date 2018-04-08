@@ -75,8 +75,8 @@ void uart_init();
 
 uart_flags_t read_flags(void);
 
-void uart_putc(unsigned char c);
+void uart_putc(char c);
 
 void uart_puts(const char* str);
 
-unsigned char uart_getc();
+char uart_getc();
