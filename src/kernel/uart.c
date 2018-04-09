@@ -69,12 +69,11 @@ uart_flags_t read_flags(void) {
 
 void uart_putc(char c) // wraps up putc in a loop so we can write whole strings
 {
-  uart_flags_t flags;
-  while((mmio_read(UART0_FR)&0x20)!=0) {}   // Wait for UART to become ready to transmit.
+  while (read_flags().transmit_queue_full);  // Wait for UART to become ready to transmit.
   // Treat \r and \n (Enter should be equal to \r\n)
   if(c=='\n'|| c=='\r'){ 
     mmio_write(UART0_DR, '\r');
-    while((mmio_read(UART0_FR)&0x20)!=0) {} // Wait for UART to become ready to transmit.
+    while (read_flags().transmit_queue_full); // Wait for UART to become ready to transmit.
     mmio_write(UART0_DR, '\n');
   }
   else mmio_write(UART0_DR, c); 
@@ -82,8 +81,7 @@ void uart_putc(char c) // wraps up putc in a loop so we can write whole strings
 
 char uart_getc()
 {
-  uart_flags_t flags;
-  while((mmio_read(UART0_FR)&0x10)!=0) {}   // Wait for UART to become ready to transmit.
+  while (read_flags().receive_queue_empty);   // Wait for UART to become ready to receive.
   return mmio_read(UART0_DR);
 }
 
