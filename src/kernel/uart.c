@@ -70,30 +70,26 @@ uart_flags_t read_flags(void) {
 void uart_putc(char c) // wraps up putc in a loop so we can write whole strings
 {
   uart_flags_t flags;
-  // Wait for UART to become ready to transmit.
-  while(1)
-    {
-      if((mmio_read(UART0_FR)&0x20)==0) break;
-    }
-  mmio_write(UART0_DR, c); // Data Register
-
+  while((mmio_read(UART0_FR)&0x20)!=0) {}   // Wait for UART to become ready to transmit.
+  // Treat \r and \n (Enter should be equal to \r\n)
+  if(c=='\n'|| c=='\r'){ 
+    mmio_write(UART0_DR, '\r');
+    while((mmio_read(UART0_FR)&0x20)!=0) {} // Wait for UART to become ready to transmit.
+    mmio_write(UART0_DR, '\n');
+  }
+  else mmio_write(UART0_DR, c); 
 } 
 
 char uart_getc()
 {
   uart_flags_t flags;
-  // Wait for UART to become ready to transmit.
-  
-  while(1)
-    {
-      if((mmio_read(UART0_FR)&0x10)==0) break;
-    }
+  while((mmio_read(UART0_FR)&0x10)!=0) {}   // Wait for UART to become ready to transmit.
   return mmio_read(UART0_DR);
 }
 
 void uart_puts(const char* str)
 {
-    for (size_t i = 0; str[i] != '\0'; i ++)
-        uart_putc((unsigned char)str[i]);
+  for (size_t i = 0; str[i] != '\0'; i++)
+    uart_putc((char)str[i]);
 }
 

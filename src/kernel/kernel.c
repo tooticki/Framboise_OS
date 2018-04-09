@@ -43,15 +43,8 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags) // In ARM, the first 
   blinker(3); // blinks 3 times, it means the OS has booted
 
   uart_init();
-  while(1){
-    //char tmp = '1';
-    char tmp = uart_getc();
-    uart_putc(tmp);
-  }
-  //framebuffer_init();
-  //orange_screen();
-
-
+  puts("Hello, I'm Framboise OS\n");
+  
   //puts("Initializing Memory Module\n");
   //mem_init((atag_t *)atags);
   
@@ -59,12 +52,10 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags) // In ARM, the first 
   // memory_test();
   
   // uart_puts("Hello, kernel World!\r\n");
-  
-  while (1) {
-    int i = 0;
-    // gets(buf,256);
-    // puts(buf);
-    //uart_putc('a');
-    //uart_putc('\n');
-    }
+
+  while(1){   // Echoes all entered characters
+    char tmp = uart_getc();
+    uart_putc(tmp);
+  }
+  while (1) {}
 }
