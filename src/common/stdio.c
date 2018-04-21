@@ -1,5 +1,4 @@
 #include "../kernel/uart.h"
-#include "../kernel/framebuffer.h"
 #include "stdio.h"
 #include "stdlib.h"
 
