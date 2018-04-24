@@ -14,8 +14,15 @@ void bzero(void * dest, int len) {
     }
 }
 
+unsigned int strlen(const char * s) {
+  unsigned int r=0;
+  while(s[r] != '\0')
+    r++;
+  return r;
+}
+
 char* itoa (int n){ 
-  static char intbuf[16];
+  static char intbuf[20];
   int i = 0, is_neg = 0, j = 0, tmp;
   if (n == 0){
     intbuf[0] = '0';
@@ -23,7 +30,7 @@ char* itoa (int n){
     return intbuf;
   }
   if (n < 0){
-    is_neg = 1;\
+    is_neg = 1;
     n = -n;
   }
   while(n >= 1 && i<16){

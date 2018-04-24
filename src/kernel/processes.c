@@ -15,6 +15,7 @@ void push_pcb(pcb_list_t * l, process_control_block_t * p){ // Adds a pcb in the
     l->last->next_pcb = p;
     l->last = p;
   }
+  p->next_pcb = 0;
 }
 
 process_control_block_t * pop_pcb(pcb_list_t * l){ // Pops a pcb from the beginning of the list l
@@ -41,12 +42,23 @@ process_control_block_t * current_process;
 pcb_list_t run_queue;      // Run Queue = list of processes willing to run
 pcb_list_t all_processes;  // List of all processes
 
-extern uint8_t __end; // From boot
-extern void switch_to_thread(process_control_block_t * old, process_control_block_t * new); // From boot
+extern uint8_t __end; // From boot.S
+extern void switch_to_thread(process_control_block_t * old, process_control_block_t * new); // From boot.S
+
+void processes_report(void) {
+  if(run_queue.first == 0) {
+    uart_puts("\nRun queue is empty\n");
+  }
+  else {
+    uart_puts("\nRun queue has something inside\n");
+  }
+}
 
 void processes_init(void) {
-  // run_queue = kmalloc(sizeof(pcb_list_t));
-  // all_peocesses = kmalloc(sizeof(pcb_list_t));
+  run_queue.first = 0;
+  run_queue.last = 0;
+  all_processes.first = 0;
+  all_processes.last = 0;
   process_control_block_t * main_pcb;
   
   // Allocate and initailize the block
@@ -67,14 +79,15 @@ void processes_init(void) {
 
 
 void schedule(void) {
-  uart_puts("\nWe're scheduling\n");
-  // DISABLE_INTERRUPTS();
+  DISABLE_INTERRUPTS();
   process_control_block_t * new_thread, * old_thread;
-#if 0
   // If the run queue is empty, the current process continues
-  if (run_queue.first == 0)
+  if (run_queue.first == 0){
+    ENABLE_INTERRUPTS();
+    timer_set(10000);
     return;
-
+  }
+  
   // Get the next thread to run.  For now we are using round-robin (FIFO)
   new_thread = pop_pcb(&run_queue);
   old_thread = current_process;
@@ -82,12 +95,10 @@ void schedule(void) {
 
   // Put the current thread back in the run queue
   push_pcb(&run_queue, old_thread);
-
-  // Context Switch 
-  switch_to_thread(old_thread, new_thread); // in context_switch.S
-#endif
-  // ENABLE_INTERRUPTS();
-  uart_puts("\nScheduling is done\n");
+  
+  // Context Switch
+  // Implemented in context_switch.S. This never returns, calls set_timer(10000), enables interrupts
+  switch_to_thread(old_thread, new_thread); 
 }
 
 void create_process(kthread_function_f thread_func, char * name, int name_len) {
@@ -98,8 +109,9 @@ void create_process(kthread_function_f thread_func, char * name, int name_len) {
   pcb = kmalloc(sizeof(process_control_block_t));
   pcb->stack_page = alloc_page();
   pcb->pid = NEW_PID;
-  memcpy(pcb->process_name, name, MIN(name_len,19));
-  pcb->process_name[MIN(name_len,19)+1] = 0;
+  memcpy(pcb->process_name, name, MIN(name_len,18));
+  pcb->process_name[MIN(name_len,19)] = 0;
+  pcb->next_pcb = 0;
 
   // Get the location the stack pointer should be in when this is run
   new_proc_state = pcb->stack_page + PAGE_SIZE - sizeof(process_saved_state_t);
@@ -117,8 +129,8 @@ void create_process(kthread_function_f thread_func, char * name, int name_len) {
 }
 
 
-static void reap(void){ // Free all resources associated with a process, context switch immediately
-  // DISABLE_INTERRUPTS();
+void reap(void){ // Free all resources associated with a process, context switch immediately
+  DISABLE_INTERRUPTS();
   process_control_block_t * new_thread, * old_thread;
 
   // Do nothing wkile the run queue is empty
@@ -134,8 +146,6 @@ static void reap(void){ // Free all resources associated with a process, context
   free_page(old_thread->stack_page);
   kfree(old_thread);
 
-  // Context Switch
+  // Context Switch: enable interrupts, sets timer, never returns
   switch_to_thread(old_thread, new_thread);
-
-  // TODO: enable interrupts?
 }

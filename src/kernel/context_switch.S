@@ -19,5 +19,6 @@ switch_to_thread:
     bl      timer_set     // reset the timer to go off in another quantum
     pop     {r0-r12}      // restore the general purpose registers
     msr     cpsr_c, r12   // Restore the new thread's program status register
+    cpsie i               // ENABLE INTERRUPTS
     pop     {lr, pc}      // we have no idea what lr should be, so just give it a garbage value. pc gets the stored lr so this function returns to there
 

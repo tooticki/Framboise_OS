@@ -1,6 +1,6 @@
 # How to compile C or assembly? (Maybe remove -fpic -ffreestanding if things don't work.)
 CC=arm-none-eabi-gcc
-CFLAGS=-O2 -mfpu=vfp -mfloat-abi=hard -march=armv6zk -mtune=arm1176jzf-s -nostartfiles -fpic -ffreestanding -std=gnu99
+CFLAGS=-O2 -mfpu=vfp -mfloat-abi=hard -march=armv6zk -mtune=arm1176jzf-s -nostartfiles -fpic -ffreestanding -std=gnu99 -Wall -Wextra
 
 # How to link several .o together? (When in doubt -> same flags that work for a single-file compile)
 LD=arm-none-eabi-gcc
@@ -55,3 +55,9 @@ terminal:
 # the command will remove all compiled files (including the kernel).
 clean:
 	rm -f $(ASM_OBJECTS) $(C_OBJECTS) $(KERNEL)
+
+copy: $(KERNEL).img
+	read -p "Insert the SD card and press enter." boogaboogahahaha
+	sudo cp $(KERNEL).img /media/dasha/boot/
+	sudo umount /media/dasha/boot/
+	sudo umount /media/dasha/rootfs/

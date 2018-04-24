@@ -1,5 +1,6 @@
 #include "interrupts.h"
 #include "uart.h"
+#include "syscalls.h"
 #include "../common/stdlib.h"
 
 static interrupt_registers_t * interrupt_regs;
@@ -29,46 +30,54 @@ void interrupts_init(void) {
 // This function is going to be called by the processor.  Needs to check pending interrupts and execute handlers if one is registered
 
 void irq_handler(void) {
-  uart_puts("From kernel/interrputs.c irq_handler: we check interrupts\n");
   int j; 
   for (j = 0; j < NUM_IRQS; j++) {
     // If the interrupt is pending and there is a handler, run the handler
     if (IRQ_IS_PENDING(interrupt_regs, j) && (handlers[j] != 0)) {
-      uart_puts("From kernel/interrputs.c irq_handler: there is an interrupt\n");
       clearers[j]();
-      //      ENABLE_INTERRUPTS(); // TODO: check
+      ENABLE_INTERRUPTS(); // TODO: check
       handlers[j]();
-      //      DISABLE_INTERRUPTS();
+      DISABLE_INTERRUPTS();
       return;
     }
   }
 }
 
+
+void
+//__attribute__ ((interrupt ("SWI")))
+software_interrupt_handler(void) {
+  //DISABLE_INTERRUPTS();
+  //  if(r0 < syscalls_table_length) // TODO: Maybe add "else error" here (?)
+    //    syscalls_table[r0] (r1);
+  uart_puts("\nA SYSTEM CALL HELL YEAH\n");
+  //  ENABLE_INTERRUPTS();
+  return;
+}
+
 // Not implemented functions
 
 void __attribute__ ((interrupt ("ABORT"))) reset_handler(void) {
-  uart_puts("RESET HANDLER\n");
-  while(1);
+  while(1)
+    uart_puts("RESET HANDLER\n");
+
 }
 void __attribute__ ((interrupt ("ABORT"))) prefetch_abort_handler(void) {
-  uart_puts("PREFETCH ABORT HANDLER\n");
-  while(1);
+  while(1)
+    uart_puts("PREFETCH ABORT HANDLER\n");
 }
 void __attribute__ ((interrupt ("ABORT"))) data_abort_handler(void) {
-  uart_puts("DATA ABORT HANDLER\n");
-  while(1);
+  while(1)
+    uart_puts("DATA ABORT HANDLER\n");
 }
 void __attribute__ ((interrupt ("UNDEF"))) undefined_instruction_handler(void) {
-  uart_puts("UNDEFINED INSTRUCTION HANDLER\n");
-  while(1);
+  while(1)
+    uart_puts("UNDEFINED INSTRUCTION HANDLER\n");
 }
-void __attribute__ ((interrupt ("SWI"))) software_interrupt_handler(void) {
-  uart_puts("SWI HANDLER\n");
-  while(1);
-}
+
 void __attribute__ ((interrupt ("FIQ"))) fast_irq_handler(void) {
-  uart_puts("FIQ HANDLER\n");
-  while(1);
+  while(1)
+    uart_puts("FIQ HANDLER\n");
 }
 
 

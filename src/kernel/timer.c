@@ -8,7 +8,6 @@ void timer_set(uint32_t usecs) {
 }
 
 void timer_irq_handler(void) {
-  uart_puts ("Coucou from timer_irq_handler\n");
   schedule();
 }
 

@@ -20,6 +20,7 @@ typedef struct {
   uint32_t cpsr; 
   uint32_t sp;
   uint32_t lr;
+  uint32_t old_stack[];
 } process_saved_state_t;
 
 typedef struct pcb {
@@ -47,7 +48,9 @@ typedef void (*kthread_function_f)(void);
 // Process' functions
 void processes_init(void);
 void create_process(kthread_function_f thread_func, char * name, int name_len);
-static void reap(void);
+void reap(void);
 void schedule(void);
+
+void processes_report(void);
 
 #endif
