@@ -1,41 +1,51 @@
 #include "interrupts.h"
-#include "uart.h"
 #include "syscalls.h"
+
+#include "../common/stdio.h"
 #include "../common/stdlib.h"
 
-static interrupt_registers_t * interrupt_regs;
-
+static interrupt_registers_t * interrupt_regs = (interrupt_registers_t *)INTERRUPTS_PENDING;
 static interrupt_handler_f handlers[NUM_IRQS];
 static interrupt_clearer_f clearers[NUM_IRQS];
 
-// Should be shared with interrputs_vector.S
-void move_exceptions_vector_table(void);
+/* You never know when you'll need to do nothing. */
+void do_nothing(void)
+{
+}
+
+/* These things live in interrputs_vector.S */
+void install_exceptions_vector_table(void);
 extern uint32_t exceptions_vector_table;
 
 void interrupts_init(void) {
-  interrupt_regs = (interrupt_registers_t *)INTERRUPTS_PENDING;
-  bzero(handlers, sizeof(interrupt_handler_f) * NUM_IRQS);
-  bzero(clearers, sizeof(interrupt_clearer_f) * NUM_IRQS);
+  unsigned int i;
+  for(i = 0; i < NUM_IRQS; i++)
+  {
+    handlers[i] = &do_nothing;
+    clearers[i] = &do_nothing;
+  }
 
-  // Disable all interrupts
-  interrupt_regs->irq_basic_disable = 0xffffffff; 
+  /* Disable all interrupts */
+  interrupt_regs->irq_basic_disable = 0xffffffff; // is 1111...111 (32 times) in binary
   interrupt_regs->irq_gpu_disable1 = 0xffffffff;
   interrupt_regs->irq_gpu_disable2 = 0xffffffff;
 
-  move_exceptions_vector_table(); // moves the IVT to address 0 (Interrupt Vector Table)
+  install_exceptions_vector_table(); 
   ENABLE_INTERRUPTS();
 }
 
-
-// This function is going to be called by the processor.  Needs to check pending interrupts and execute handlers if one is registered
-
+/* This function is going to be called by the processor on each
+   hardware interrupt (see interrupts_vector.S to see why).
+   It checks pending interrupts and execute clearers and handlers if
+   one is registered.
+ */
 void irq_handler(void) {
-  int j; 
+  unsigned int j; 
   for (j = 0; j < NUM_IRQS; j++) {
     // If the interrupt is pending and there is a handler, run the handler
     if (IRQ_IS_PENDING(interrupt_regs, j) && (handlers[j] != 0)) {
       clearers[j]();
-      ENABLE_INTERRUPTS(); // TODO: check
+      ENABLE_INTERRUPTS(); // We might want to perform a syscall or something in the handler...
       handlers[j]();
       DISABLE_INTERRUPTS();
       return;
@@ -43,45 +53,23 @@ void irq_handler(void) {
   }
 }
 
+/* This function is going to be called by the processor on each
+   syscall (see interrupts_vector.S to see why).
+   It simply calls the appropriate function to treat the syscall.
+ */
+void software_interrupt_handler(unsigned int r0, unsigned int r1 ) {
+  DISABLE_INTERRUPTS();
 
-void
-//__attribute__ ((interrupt ("SWI")))
-software_interrupt_handler(void) {
-  //DISABLE_INTERRUPTS();
-  //  if(r0 < syscalls_table_length) // TODO: Maybe add "else error" here (?)
-    //    syscalls_table[r0] (r1);
-  uart_puts("\nA SYSTEM CALL HELL YEAH\n");
-  //  ENABLE_INTERRUPTS();
-  return;
+  if(r0 < syscalls_table_length)
+    syscalls_table[r0] (r1);
+  else
+    {} // TODO: add error treatment here
+
+   ENABLE_INTERRUPTS();
 }
 
-// Not implemented functions
-
-void __attribute__ ((interrupt ("ABORT"))) reset_handler(void) {
-  while(1)
-    uart_puts("RESET HANDLER\n");
-
-}
-void __attribute__ ((interrupt ("ABORT"))) prefetch_abort_handler(void) {
-  while(1)
-    uart_puts("PREFETCH ABORT HANDLER\n");
-}
-void __attribute__ ((interrupt ("ABORT"))) data_abort_handler(void) {
-  while(1)
-    uart_puts("DATA ABORT HANDLER\n");
-}
-void __attribute__ ((interrupt ("UNDEF"))) undefined_instruction_handler(void) {
-  while(1)
-    uart_puts("UNDEFINED INSTRUCTION HANDLER\n");
-}
-
-void __attribute__ ((interrupt ("FIQ"))) fast_irq_handler(void) {
-  while(1)
-    uart_puts("FIQ HANDLER\n");
-}
-
-
-void register_irq_handler(irq_number_t irq_num, interrupt_handler_f handler, interrupt_clearer_f clearer) {
+void register_irq_handler(irq_number_t irq_num, interrupt_handler_f handler,
+			  interrupt_clearer_f clearer) {
   uint32_t irq_pos;
   if (IRQ_IS_BASIC(irq_num)) {
     irq_pos = irq_num - 64;
@@ -102,10 +90,10 @@ void register_irq_handler(irq_number_t irq_num, interrupt_handler_f handler, int
     interrupt_regs->irq_gpu_enable1 |= (1 << irq_pos);
   }
   else {
-    uart_puts("Error: cannot register IRQ handler: invalid IRQ number: \n");
+    puts("Error: cannot register IRQ handler: invalid IRQ number: \n");
   }
 }
-void unregister_irq_handler(irq_number_t irq_num) { // TODO: find another name
+void unregister_irq_handler(irq_number_t irq_num) {
   uint32_t irq_pos;
   if (IRQ_IS_BASIC(irq_num)) {
     irq_pos = irq_num - 64;
@@ -127,7 +115,31 @@ void unregister_irq_handler(irq_number_t irq_num) { // TODO: find another name
     interrupt_regs->irq_gpu_disable1 |= (1 << irq_pos);
   }
   else {
-    uart_puts("ERROR: CANNOT UNREGISTER IRQ HANDLER: INVALID IRQ NUMBER \n");
+    puts("ERROR: CANNOT UNREGISTER IRQ HANDLER: INVALID IRQ NUMBER \n");
   }
 }
 
+/* The following functions are unimplemented and should never be called. */
+
+void __attribute__ ((interrupt ("ABORT"))) reset_handler(void) {
+  while(1)
+    puts("RESET HANDLER\n");
+
+}
+void __attribute__ ((interrupt ("ABORT"))) prefetch_abort_handler(void) {
+  while(1)
+    puts("PREFETCH ABORT HANDLER\n");
+}
+void __attribute__ ((interrupt ("ABORT"))) data_abort_handler(void) {
+  while(1)
+    puts("DATA ABORT HANDLER\n");
+}
+void __attribute__ ((interrupt ("UNDEF"))) undefined_instruction_handler(void) {
+  while(1)
+    puts("UNDEFINED INSTRUCTION HANDLER\n");
+}
+
+void __attribute__ ((interrupt ("FIQ"))) fast_irq_handler(void) {
+  while(1)
+    puts("FIQ HANDLER\n");
+}

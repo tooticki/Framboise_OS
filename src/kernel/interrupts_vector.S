@@ -1,6 +1,6 @@
 .section ".text"
 
-.global move_exceptions_vector_table
+.global install_exceptions_vector_table
 
 exceptions_vector_table:
     ldr pc, reset_handler_abs_addr
@@ -20,7 +20,7 @@ data_abort_handler_abs_addr:            .word data_abort_handler
 irq_handler_abs_addr:                   .word irq_handler_asm_wrapper
 fast_irq_handler_abs_addr:              .word fast_irq_handler
 
-move_exceptions_vector_table: // moves the Interrupt Vector Table at adress 0
+install_exceptions_vector_table: // moves the Interrupt Vector Table at adress 0
     push    {r4, r5, r6, r7, r8, r9}
     ldr     r0, =exceptions_vector_table
     mov     r1, #0x0000
