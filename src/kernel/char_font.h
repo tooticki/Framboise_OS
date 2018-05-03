@@ -1,9 +1,13 @@
-#include <stdint.h>
-
 #ifndef CHAR_FONT_H
 #define CHAR_FONT_H
 
-const uint8_t * font(int c) {
+#include <stdint.h>
+
+/* Returns a bitmap for the c-th ASCII character code. The bitmap is
+   an array of 8 integers of 8 bits each; this forms an 8x8 matrix of
+   black (0) and white (1) pixels.
+   If c is out of range, return a fully black character. */
+const uint8_t * font(unsigned int c) {
   static const uint8_t f[128][8] = {
     { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},   // U+0000 (nul)
     { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},   // U+0001
@@ -134,7 +138,11 @@ const uint8_t * font(int c) {
     { 0x6E, 0x3B, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},   // U+007E (~)
     { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}    // U+007F
   };
-  return (uint8_t *)f[c];
+
+  if(c < 128)
+    return (uint8_t *)f[c];
+  else
+    return (uint8_t *)f[0];
 }
 
 #endif
