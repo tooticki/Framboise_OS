@@ -15,8 +15,8 @@ switch_to_thread:
 
     // Restore the new thread's state
     ldr     sp, [r1]      // Load the stack pointer of the new process
-    ldr     r0, =#(10000) // Set Quantum time to 10 ms (10000 us)
-    bl      timer_set     // reset the timer to go off in another quantum
+    ldr     r0, =#(10000) // Call timer_set(10000), so the timer will go off in 10ms
+    bl      timer_set
     pop     {r0-r12}      // restore the general purpose registers
     msr     cpsr_c, r12   // Restore the new thread's program status register
     cpsie i               // ENABLE INTERRUPTS
