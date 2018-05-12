@@ -9,8 +9,7 @@ static interrupt_handler_f handlers[NUM_IRQS];
 static interrupt_clearer_f clearers[NUM_IRQS];
 
 /* You never know when you'll need to do nothing. */
-void do_nothing(void)
-{
+void do_nothing(void) {
 }
 
 /* These things live in interrputs_vector.S */
