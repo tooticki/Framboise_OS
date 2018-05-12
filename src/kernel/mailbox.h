@@ -1,8 +1,12 @@
-#include <stdint.h>
-#include "peripheral.h"
+// NEVER ACTUALLY USED IN KERNEL CODE
+// THIS FILE HASN'T BEEN REVIEWED AND IS DIRTY
 
 #ifndef MAILBOX_H
 #define MAILBOX_H
+
+#include <stdint.h>
+#include "peripheral.h"
+
 
 #define MAILBOX_BASE PERIPHERAL_BASE + MAILBOX_OFFSET
 #define MAIL0_READ (((mailbox_message_t *)(0x00 + MAILBOX_BASE)))

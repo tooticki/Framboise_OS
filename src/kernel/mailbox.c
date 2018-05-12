@@ -1,3 +1,6 @@
+// NEVER ACTUALLY USED IN KERNEL CODE
+// THIS FILE HASN'T BEEN REVIEWED AND IS DIRTY
+
 #include "mailbox.h"
 #include "../common/stdlib.h"
 #include "mem.h"
