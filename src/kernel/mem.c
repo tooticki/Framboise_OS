@@ -1,14 +1,26 @@
 #include "mem.h"
+#include <limits.h>
 #include "atag.h"
 #include "../common/stdlib.h"
 #include "../common/stdio.h"
 
-  // Heap
+// Heap
 
-int head_size = sizeof(heap_segment_t);
-static heap_segment_t * first_heap_segment;
+typedef struct heap_segment{
+    struct heap_segment * next;
+    struct heap_segment * prev;
+    uint32_t is_allocated;
+    uint32_t segment_size;  // Includes this header
+} heap_segment_t;
 
-static void heap_init(uint32_t heap_start) {
+#define head_size sizeof(heap_segment_t);
+
+static
+heap_segment_t * first_heap_segment;
+
+// Called from mem_init
+static
+void heap_init(uint32_t heap_start) {
   first_heap_segment = (heap_segment_t *) heap_start;
   bzero(first_heap_segment, head_size);
   first_heap_segment->segment_size = KERNEL_HEAP_SIZE;
@@ -16,7 +28,8 @@ static void heap_init(uint32_t heap_start) {
 
 void * kmalloc(uint32_t size) {
   heap_segment_t * curr, *tmp, *new_next, *best = 0;
-  int currdiff, bestdiff= 0x7fffffff; // Max signed int
+  int currdiff, bestdiff=  INT_MAX; // Max signed int
+
   size+=head_size;                     // Add the segment header size to the needed ammount of memory
   if(size%16 !=0) size+=(16-size%16);  // Complete the size to be divisible by 16
 
@@ -68,44 +81,25 @@ void kfree(void *ptr) {
     }
 }
 
-  // Pages
-    
-uint8_t __end;
-static uint32_t num_pages;
+// Pages (hook for future virtual memory implementation)
 
-static page_t * all_pages_array;
+// We implement a list of pages and functions to manipulate them.
 
-void * alloc_page(void) {
-    page_t * page;
-    void * page_mem;
-    if (num_free_pages == 0)
-        return 0;
+static page_t * first_free_page;
+static page_t * last_free_page;
+static uint32_t num_free_pages;
 
-    // Get a free page
-    page = pop_free_page();
-    page->flags.kernel_heap_page = 1;
-    page->flags.allocated = 1;
+typedef struct {
+  uint8_t allocated: 1;           // This page is allocated to something
+  uint8_t kernel_heap_page: 1;         // This page is a part of the kernel
+  uint32_t reserved: 30;
+} page_flags_t;
 
-    // Get the address the physical page metadata refers to
-    page_mem = (void *)((page - all_pages_array) * PAGE_SIZE);
-
-    // Zero out the page
-    bzero(page_mem, PAGE_SIZE);
-
-    return page_mem;
-}
-
-void free_page(void * ptr) {
-    page_t * page;
-
-    // Get page metadata from the physical address
-    page = all_pages_array + ((uint32_t)ptr / PAGE_SIZE);
-
-    // Mark the page as free
-    page->flags.allocated = 0;
-    push_last_free_page(page);
-}
-
+typedef struct page {
+  uint32_t vaddr_mapped;  // The virtual address that maps to this page   
+  page_flags_t flags;
+  struct page * next; // Next free page in the linked list
+} page_t;
 
 void push_first_free_page(page_t * p){ // Adds a page in the beginning of the list
   if(num_free_pages == 0){
@@ -144,9 +138,45 @@ page_t * pop_free_page(){ // Pops a page from the beginning of the list
 page_t * peek_free_page(){ // Peeks a page from the beginning of the list
   return first_free_page;
 }
+    
+// From boot.S
+extern uint8_t __end;
 
+static uint32_t num_pages;
+static page_t * all_pages_array;
 
-  // Memory initialization
+void * alloc_page(void) {
+    page_t * page;
+    void * page_mem;
+    if (num_free_pages == 0)
+        return 0;
+
+    // Get a free page
+    page = pop_free_page();
+    page->flags.kernel_heap_page = 1;
+    page->flags.allocated = 1;
+
+    // Get the address the physical page metadata refers to
+    page_mem = (void *)((page - all_pages_array) * PAGE_SIZE);
+
+    // Zero out the page
+    bzero(page_mem, PAGE_SIZE);
+
+    return page_mem;
+}
+
+void free_page(void * ptr) {
+    page_t * page;
+
+    // Get page metadata from the physical address
+    page = all_pages_array + ((uint32_t)ptr / PAGE_SIZE);
+
+    // Mark the page as free
+    page->flags.allocated = 0;
+    push_last_free_page(page);
+}
+
+// Memory initialization
 
 void mem_init(atag_t * atags) {
   uint32_t mem_size, page_array_len, page_array_end, kernel_pages, i;
@@ -167,7 +197,7 @@ void mem_init(atag_t * atags) {
     all_pages_array[i].vaddr_mapped = i * PAGE_SIZE;    // Identity map the kernel pages
     all_pages_array[i].flags.allocated = 1;
     all_pages_array[i].flags.kernel_heap_page = 1;
-    }
+  }
   
   // Reserve 1 MB for the kernel heap
   for(; i < kernel_pages + (KERNEL_HEAP_SIZE / PAGE_SIZE); i++){
@@ -187,8 +217,7 @@ void mem_init(atag_t * atags) {
   heap_init(page_array_end);
 }
 
-
-   // Printing the state of memory for testing
+ // Printing the state of memory for testing
 
 void print_gen_memory_state(){
   // General information
