@@ -48,11 +48,17 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags) // In ARM, the first 
   (void) r0; // Avoid warning for r0 not being used
   (void) r1; // Ditto r1
 
-  blinker(3); // blinks 3 times, it means the OS has booted
-
   uart_init();
 
   puts("Hello, I'm Framboise OS\n");
+  
+  puts("Initializing timer...\n");
+  timer_init();
+  puts("Done\n");
+
+  puts("Affable blinking...\n");
+  blinker(3); // blinks 3 times, it means the OS has booted
+  puts("Done\n");
 
   puts("Initializing Memory Manager...\n");
   mem_init((atag_t *)atags);
@@ -64,10 +70,6 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags) // In ARM, the first 
 
   puts("Initializing interrups...\n");
   interrupts_init();
-  puts("Done\n");
-
-  puts("Initializing timer...\n");
-  timer_init();
   puts("Done\n");
 
 #if 0
@@ -99,7 +101,6 @@ void main(void)
 
   // Just increments a counter ad vitam aeternam
   while (1) {
-    uart_puts("\nSheumeugafoo...");
     user_puts("\nprocess 0 says: ");
     uart_puts(itoa(i++));
     udelay(500000); // 0.5 secs

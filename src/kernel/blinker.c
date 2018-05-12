@@ -14,13 +14,13 @@ void blinker(unsigned int n)
     /* Blink n times in a row*/
     for(int i = 0; i < n; i++)
     {
-      udelay(1000000);
+      udelay(500000);
 
 	/* Set the LED GPIO pin high (Turn OK LED off for original Pi, and on
            for plus models) */
       gpio[LED_GPSET] = (1 << LED_GPIO_BIT);
 
-      udelay(1000000);
+      udelay(500000);
 
         /* Set the LED GPIO pin low ( Turn OK LED on for original Pi, and off
            for plus models )*/
