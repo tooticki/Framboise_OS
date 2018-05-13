@@ -34,13 +34,14 @@ void sys_pause(void * unused){
 
 typedef struct {
   kthread_function_f thread_func;
+  int priority;
   char *name;
   int name_len;
 } create_process_args_t;
 
 void sys_create_process(void * args){
   create_process_args_t * tmp = args;
-  create_process(tmp->thread_func, tmp->name, tmp->name_len);
+  create_process(tmp->thread_func, tmp->priority, tmp->name, tmp->name_len);
 }
 
 // Populates the syscalls_table array. Should be called once at boot
@@ -68,7 +69,7 @@ void user_pause(void){
   syscall(SYS_PAUSE, 0);
 }
 
-void user_create_process(kthread_function_f thread_func, char *name){
-  create_process_args_t args = {thread_func, name, strlen(name)};
+void user_create_process(kthread_function_f thread_func, int priority, char *name){
+  create_process_args_t args = {thread_func, priority, name, strlen(name)};
   syscall(SYS_CREATE_PROCESS, &args);
 }

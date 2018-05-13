@@ -35,21 +35,14 @@ void memory_test(void){
 
 void processes_test(void) {
     int i = 0;
-    while (1) {
+    while (i<8) {
+      process_report();
       puts("\nprocess 1 says: ");
       puts(itoa(i++));
-      udelay(500000); // 0.5 secs
+      udelay(5000000); // 0.5 secs
     }
 }
 
-void processes_test_2(void) {
-    int i = 0;
-    while (1) {
-      puts("\nprocess 2 says: ");
-      puts(itoa(i++));
-      udelay(500000); // 0.5 secs
-    }
-}
 
 void main(void);
 
@@ -88,13 +81,11 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
   processes_init();
   puts("Done.\n");
 
-  puts("Creating a new process...\n");
-  create_process(processes_test, "TEST", 4);
-  puts("Done.\n");
-
-  puts("Creating a new process...\n");
-  create_process(processes_test_2, "TEST2", 5);
-  puts("Done.\n");
+  for(int i = 0; i<3; i++){
+    puts("Creating a new process...\n");
+    create_process(processes_test, 0, itoa(i), 1);
+    puts("Done.\n");    
+  }
 
   main();
 
@@ -120,7 +111,7 @@ void main(void)
   getc();
 
   // Just increments a counter ad vitam aeternam
-  while (1) {
+  while (i<20) {
     puts("\nprocess 0 says: ");
     puts(itoa(i++));
     udelay(500000); // 0.5 secs

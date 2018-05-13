@@ -47,10 +47,10 @@ typedef void (*kthread_function_f)(void);
 
 // Process' functions
 void processes_init(void);
-void create_process(kthread_function_f thread_func, char * name, int name_len);
+void create_process(kthread_function_f thread_func, unsigned int priority, char * name, int name_len);
 void reap(void);
 void schedule(void);
 
-void processes_report(void);
-
+void run_queues_report(void);
+void process_report(void);
 #endif

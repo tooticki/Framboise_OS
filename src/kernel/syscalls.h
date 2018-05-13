@@ -32,6 +32,6 @@ void syscalls_init(void);
 void user_puts(char * s);
 void user_gets(char *s, unsigned int n); // n is a bound for the string length
 void user_pause(void);
-void user_create_process(kthread_function_f thread_func, char *name);
+void user_create_process(kthread_function_f thread_func, int priority, char *name);
 
 #endif
