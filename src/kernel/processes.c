@@ -51,7 +51,7 @@ int current_priority;
 // Run Queue = list of processes willing to run.
 // run_queue[p] is a queue of processes with priority p.
 pcb_list_t run_queue[MAX_PRIORITY+1];     
-pcb_list_t all_processes;  // List of all existing processes
+  //  pcb_list_t all_processes;  // List of all existing processes
 
 extern uint8_t __end; // From boot.S
 extern void switch_to_thread(process_control_block_t * old, process_control_block_t * new); // From boot.S
@@ -110,8 +110,8 @@ void processes_init(void) {
     run_queue[i].first = 0;
     run_queue[i].last = 0;
   }
-  all_processes.first = 0;
-  all_processes.last = 0;
+    //  all_processes.first = 0;
+    //  all_processes.last = 0;
   process_control_block_t * main_pcb;
   
   // Allocate and initailize the block
@@ -121,7 +121,7 @@ void processes_init(void) {
   memcpy(main_pcb->process_name, "Init", 5);
 
   // Add main_pcb to all process list.  It is already running, so don't add it to the run queues
-  push_pcb(&all_processes, main_pcb);
+    //  push_pcb(&all_processes, main_pcb);
   main_pcb->next_pcb = 0;
 
   current_process = main_pcb;
@@ -155,7 +155,7 @@ void create_process(kthread_function_f thread_func, unsigned int priority, char 
   new_proc_state->cpsr = 0x13 | (8 << 1);     // Sets the thread up to run in supervisor mode with irqs only
 
  
-  push_pcb(&all_processes, pcb);       // Add the thread to the list of all processes
+    //  push_pcb(&all_processes, pcb);       // Add the thread to the list of all processes
   push_pcb(&run_queue[priority], pcb); // and to the queue of the needed priority
 }
 
