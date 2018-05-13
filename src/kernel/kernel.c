@@ -6,7 +6,6 @@
 #include "mem.h"
 #include "interrupts.h"
 #include "timer.h"
-#include "syscalls.h"
 #include "processes.h"
 
 
@@ -43,11 +42,20 @@ void processes_test(void) {
     }
 }
 
+void processes_test_2(void) {
+    int i = 0;
+    while (1) {
+      puts("\nprocess 2 says: ");
+      puts(itoa(i++));
+      udelay(500000); // 0.5 secs
+    }
+}
+
 void main(void);
 
 // In ARM, the first three parameters of a function are passed through r0, r1 and r2
 // The bootloaderplaces some information about the hardware/command line (used to run the kernel) in memory. This information is called atags
-void kernel_main(uint32_t r0, uint32_t r1, atag_t * atags)
+void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 {
   (void) r0; // Avoid warning for r0 not being used
   (void) r1; // Ditto r1
@@ -65,7 +73,7 @@ void kernel_main(uint32_t r0, uint32_t r1, atag_t * atags)
   puts("Done\n");
 
   puts("Initializing Memory Manager...\n");
-  mem_init(atags);
+  mem_init((atag_t *)atags);
   puts("Done\n");
 
   puts("Initializing system calls...\n");
@@ -84,6 +92,17 @@ void kernel_main(uint32_t r0, uint32_t r1, atag_t * atags)
   create_process(processes_test, "TEST", 4);
   puts("Done.\n");
 
+  puts("Creating a new process...\n");
+  create_process(processes_test_2, "TEST2", 5);
+  puts("Done.\n");
+
+  int i = 0;
+  while (1) {
+    puts("\nprocess 0 says: ");
+    puts(itoa(i++));
+    udelay(500000); // 0.5 secs
+  }
+  
   main();
 
   // Should never be reached: main doesn't return
@@ -109,8 +128,8 @@ void main(void)
 
   // Just increments a counter ad vitam aeternam
   while (1) {
-    user_puts("\nprocess 0 says: ");
-    uart_puts(itoa(i++));
+    puts("\nprocess 0 says: ");
+    puts(itoa(i++));
     udelay(500000); // 0.5 secs
   }
 

@@ -2,6 +2,7 @@
 #define MEM_H
 
 #include <stdint.h>
+#include "atag.h"
 
 // Heap
 
@@ -16,8 +17,6 @@ void kfree(void *ptr);
 
 // TODO: get this information from atags instead of fixed.
 #define PAGE_SIZE 4096
-
-struct atag_t;
 
 void mem_init(atag_t * atags); // Initializes the memory
 void *alloc_page(void);        // Allocates one free memory-page

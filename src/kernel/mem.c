@@ -13,10 +13,9 @@ typedef struct heap_segment{
     uint32_t segment_size;  // Includes this header
 } heap_segment_t;
 
-#define head_size sizeof(heap_segment_t);
+#define head_size sizeof(heap_segment_t)
 
-static
-heap_segment_t * first_heap_segment;
+static heap_segment_t * first_heap_segment;
 
 // Called from mem_init
 static
@@ -28,7 +27,7 @@ void heap_init(uint32_t heap_start) {
 
 void * kmalloc(uint32_t size) {
   heap_segment_t * curr, *tmp, *new_next, *best = 0;
-  int currdiff, bestdiff=  INT_MAX; // Max signed int
+  unsigned int currdiff, bestdiff =  UINT_MAX; // Max unsigned int
 
   size+=head_size;                     // Add the segment header size to the needed ammount of memory
   if(size%16 !=0) size+=(16-size%16);  // Complete the size to be divisible by 16
@@ -85,10 +84,6 @@ void kfree(void *ptr) {
 
 // We implement a list of pages and functions to manipulate them.
 
-static page_t * first_free_page;
-static page_t * last_free_page;
-static uint32_t num_free_pages;
-
 typedef struct {
   uint8_t allocated: 1;           // This page is allocated to something
   uint8_t kernel_heap_page: 1;         // This page is a part of the kernel
@@ -100,6 +95,11 @@ typedef struct page {
   page_flags_t flags;
   struct page * next; // Next free page in the linked list
 } page_t;
+
+
+static page_t * first_free_page;
+static page_t * last_free_page;
+static uint32_t num_free_pages;
 
 void push_first_free_page(page_t * p){ // Adds a page in the beginning of the list
   if(num_free_pages == 0){

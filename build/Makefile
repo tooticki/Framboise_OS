@@ -47,17 +47,18 @@ $(KERNEL).elf: $(C_OBJECTS) $(ASM_OBJECTS)
 %.o:%.S
 	$(CC) $(CFLAGS) -c $< -o $@
 
-terminal:
-	sudo screen /dev/ttyUSB0 115200
-
-
 # â€œcleanâ€ is not an actual output, but if we ask to generate â€œcleanâ€,
 # the command will remove all compiled files (including the kernel).
 clean:
 	rm -f $(ASM_OBJECTS) $(C_OBJECTS) $(KERNEL)
 
 copy: $(KERNEL).img
-	read -p "Insert the SD card and press enter." boogaboogahahaha
+	read -p "Insert the SD card and press enter." x
 	sudo cp $(KERNEL).img /media/dasha/boot/
 	sudo umount /media/dasha/boot/
 	sudo umount /media/dasha/rootfs/
+
+terminal:
+	read -p "Plug in the RaspPi serial cable and press enter." x
+	sudo screen /dev/ttyUSB0 115200
+
