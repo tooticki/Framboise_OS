@@ -96,13 +96,6 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
   create_process(processes_test_2, "TEST2", 5);
   puts("Done.\n");
 
-  int i = 0;
-  while (1) {
-    puts("\nprocess 0 says: ");
-    puts(itoa(i++));
-    udelay(500000); // 0.5 secs
-  }
-  
   main();
 
   // Should never be reached: main doesn't return
