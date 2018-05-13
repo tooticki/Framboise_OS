@@ -63,6 +63,10 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
   uart_init();
 
   puts("Hello, I'm Framboise OS\n");
+
+  puts("Initializing interrups...\n");
+  interrupts_init();
+  puts("Done\n");
   
   puts("Initializing timer...\n");
   timer_init();
@@ -76,13 +80,9 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
   mem_init((atag_t *)atags);
   puts("Done\n");
 
-  puts("Initializing system calls...\n");
+  /*puts("Initializing system calls...\n");
   syscalls_init();
-  puts("Done\n");
-
-  puts("Initializing interrups...\n");
-  interrupts_init();
-  puts("Done\n");
+  puts("Done\n");*/
 
   puts("Initializing processes...\n");
   processes_init();
