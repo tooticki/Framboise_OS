@@ -42,7 +42,7 @@ void irq_handler(void) {
   unsigned int j; 
   for (j = 0; j < NUM_IRQS; j++) {
     // If the interrupt is pending and there is a handler, run the handler
-    if (IRQ_IS_PENDING(interrupt_regs, j) && (handlers[j] != 0)) {
+    if (IRQ_IS_PENDING(interrupt_regs, j) && (handlers[j] != &do_nothing)) {
       clearers[j]();
       ENABLE_INTERRUPTS(); // We might want to perform a syscall or something in the handler...
       handlers[j]();
@@ -114,16 +114,19 @@ void unregister_irq_handler(irq_number_t irq_num) {
     interrupt_regs->irq_gpu_disable1 |= (1 << irq_pos);
   }
   else {
-    puts("ERROR: CANNOT UNREGISTER IRQ HANDLER: INVALID IRQ NUMBER \n");
+    puts("Error: cannot unregister IRQ handler: invalid IRQ number: \n");
   }
 }
 
 /* The following functions are unimplemented and should never be called. */
 
 void __attribute__ ((interrupt ("ABORT"))) reset_handler(void) {
-  while(1)
-    puts("RESET HANDLER\n");
-
+  puts("RESET HANDLER\n");
+  while(1){}
+}
+void __attribute__ ((interrupt ("UNDEF"))) undefined_instruction_handler(void) {
+  puts("UNDEFINED INSTRUCTION HANDLER\n");
+  while(1){}
 }
 void __attribute__ ((interrupt ("ABORT"))) prefetch_abort_handler(void) {
   while(1)
@@ -133,11 +136,6 @@ void __attribute__ ((interrupt ("ABORT"))) data_abort_handler(void) {
   while(1)
     puts("DATA ABORT HANDLER\n");
 }
-void __attribute__ ((interrupt ("UNDEF"))) undefined_instruction_handler(void) {
-  while(1)
-    puts("UNDEFINED INSTRUCTION HANDLER\n");
-}
-
 void __attribute__ ((interrupt ("FIQ"))) fast_irq_handler(void) {
   while(1)
     puts("FIQ HANDLER\n");

@@ -68,12 +68,12 @@ void run_queues_report(void) {
 
 void process_report(void){
   process_control_block_t pcb = *current_process;
-  puts("\n");
+  puts("\nprocess ");
   puts(pcb.process_name);
-  puts(": ");
+  puts(", pid ");
   puts(itoa(pcb.pid));
-  puts("  ");
-  puts(itoa(pcb.saved_state->r0));
+  puts(": ");
+  /*puts(itoa(pcb.saved_state->r0));
   puts("  ");
   puts(itoa(pcb.saved_state->r1));
   puts("  ");
@@ -102,7 +102,7 @@ void process_report(void){
   puts(itoa(pcb.saved_state->sp));
   puts("  ");
   puts(itoa(pcb.saved_state->lr));
-  puts("\n");
+  puts("\n");*/
 }
 
 void processes_init(void) {
@@ -185,7 +185,6 @@ void schedule(void) {
   if (p < current_priority){
     timer_set(10000);
     ENABLE_INTERRUPTS();
-    puts("  ");
     return;
   }
   

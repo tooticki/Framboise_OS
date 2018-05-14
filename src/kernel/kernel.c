@@ -34,13 +34,15 @@ void memory_test(void){
 }
 
 void processes_test(void) {
-    int i = 0;
-    while (i<8) {
-      process_report();
-      puts("\nprocess 1 says: ");
-      puts(itoa(i++));
-      udelay(5000000); // 0.5 secs
-    }
+  int i = 0;
+  while (i<3) {
+    process_report();
+    // puts("\nprocess x says: ");
+    puts(itoa(i++));
+    puts("\n");
+    udelay(1000000); // 1 sec
+  }
+  //while(1){}
 }
 
 
@@ -81,9 +83,9 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
   processes_init();
   puts("Done.\n");
 
-  for(int i = 0; i<3; i++){
+  for(int i = 0; i<6; i++){
     puts("Creating a new process...\n");
-    create_process(processes_test, 0, itoa(i), 1);
+    create_process(processes_test, i, itoa(i), 1);
     puts("Done.\n");    
   }
 
@@ -98,27 +100,27 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 void echo_chars(void)
 {
   while(1){
-    char tmp = uart_getc();
-    uart_putc(tmp);
+    char tmp = getc();
+    putc(tmp);
   }
 }
 
 void main(void)
 {
-  int i = 0;
-
-  puts("We are now in process 0. Press any key to start.");
+  // int i = 0;
+  while(1){}
+  /* puts("We are now in process 0. Press any key to start.");
   getc();
 
   // Just increments a counter ad vitam aeternam
-  while (i<20) {
+  while (i<10) {
     puts("\nprocess 0 says: ");
     puts(itoa(i++));
     udelay(500000); // 0.5 secs
   }
 
-  puts("Oops, something went wrong. Just echoing characters now...");
+  puts("Oops, something went wrong. Just echoing characters now...");*/
 
   // Echoes all entered characters... should never be reached
-  echo_chars();
+  //echo_chars();
 }
