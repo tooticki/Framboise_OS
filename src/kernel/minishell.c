@@ -6,19 +6,21 @@
 #include "minishell.h"
 
 void shell_help(){
-  puts("\nTo create a process: H <process name> <piority>\n");
-  puts("\nTo kill a process: K <process pid>\n");
-  puts("\nTo get the list of all processes: L\n");
-  puts("\nTo get help: H\n");
+  puts("Possible commands:\n");
+  puts("  C <process name> <priority>  Create a process\n");
+  puts("  K <process pid>              Kill a process\n");
+  puts("  L                            Display the list of all processes\n");
+  puts("  H                            Dipslay this information\n");
 }
 
 void test_process(){
   int i = 0;
-  while (i<5) {
-    process_report();
-    puts(itoa(i++));
-    puts("\n");
-    udelay(1000000); // 1 sec
+  while (i<10) {
+    //process_report();
+    //puts(itoa(i++));
+    //puts("\n");
+    i++;
+    udelay(5000000); // 5 sec
   }
 }
 
@@ -26,14 +28,15 @@ void shell_create_process(char* s){
   int i = 0, name_start, priority_start, name_len, priority;
   while(s[i] == ' ')
     i++;
-  name_start = i;
+  name_start = i-1;
   while(s[i] != ' ' && s[i] != '\0')
     i++;
   if(s[i] == '\0'){
     shell_error();
-    shell_help();
     return;
   }
+  s[i] = '\0';
+  s++;
   name_len = i-name_start;
   while(s[i] == ' ')
     i++;
@@ -45,23 +48,35 @@ void shell_create_process(char* s){
   priority_start = i;
   priority = atoi(s+priority_start);
   create_process(test_process, priority, s+name_start, name_len);
+  puts("Process ");
+  puts(s+name_start);
+  puts(" was succesfully created\n");
 }
 void shell_kill_process(char* s){
-  if(s[0] < '0' || s[0] > '9'){
+  int i = 0;
+  while(s[i] == ' ')
+    i++;
+  if(s[i] < '0' || s[i] > '9'){
     shell_error();
-    shell_help();
     return;
   }
-  if(kill(atoi(s)) == -1)
-    puts("\nShell error: No such process\n");
+  if(kill(atoi(s+i)) == -1){
+    puts("Shell error: No such process, ");
+    puts(s+i);
+    puts("\n");
+    return;
+  }
+  puts("Process with pid ");
+  puts(s+i);
+  puts(" was succesfully killed\n");
 }
 
 void shell_list(void){
-  shell_error();
+  print_processes_list();
 }
 
 void shell_error(){
-  puts("\nShell error: Invalid command\n");
+  puts("Shell error: Invalid command, use H for help"); 
 }
 
 void parse(char* s){
@@ -70,10 +85,10 @@ void parse(char* s){
     i++;
   switch(s[i]){
   case 'C':
-    shell_create_process(s+i);
+    shell_create_process(s+i+1);
     break;
   case 'K':
-    shell_kill_process(s+i);
+    shell_kill_process(s+i+1);
     break;
   case 'L':
     shell_list();
@@ -89,7 +104,7 @@ void parse(char* s){
 }
 
 void run_shell(void){
-  char buf[64];
+  char buf[128];
   while(1){
     puts("user@framboise☺ $ ");
     gets(buf, 32);

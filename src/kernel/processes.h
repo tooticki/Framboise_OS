@@ -55,5 +55,6 @@ int kill(uint32_t pid); // returns -1 if Not Found
 void schedule(void);
 
 void run_queues_report(void);
+void print_processes_list(void);
 void process_report(void);
 #endif

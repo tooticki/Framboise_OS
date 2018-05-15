@@ -56,7 +56,7 @@ void remove_pcb(pcb_list_t * l, process_control_block_t * p){ // Removes a pcb f
     tmp = tmp->next_pcb;
   }  
   if(tmp == 0) return;  
-  tmp->next_pcb = tmp->next_pcb;
+  tmp->next_pcb = p->next_pcb;
   p->next_pcb = 0;
 }
 
@@ -90,9 +90,26 @@ void run_queues_report(void) {
   }
 }
 
+void print_processes_list(void){
+  process_control_block_t * tmp;
+  for(int i = 0; i <= MAX_PRIORITY; i++){
+    tmp = run_queue[i].first;
+    while(tmp != 0){
+      puts("name: ");
+      puts(tmp->process_name);
+      puts(" pid:");
+      puts(itoa(tmp->pid));
+      puts(" priority:");
+      puts(itoa(i));
+      puts("\n");
+      tmp = tmp->next_pcb;
+    }
+  }
+}
+
 void process_report(void){
   process_control_block_t pcb = *current_process;
-  puts("\nprocess ");
+  puts("\nI'm process ");
   puts(pcb.process_name);
   puts(", pid ");
   puts(itoa(pcb.pid));

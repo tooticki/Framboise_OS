@@ -1,4 +1,6 @@
+#include "stdio.h"
 #include "stdlib.h"
+
 
 void memcpy(void * dest, void * src, int len) {
     char * d = dest, * s = src;
@@ -65,6 +67,7 @@ int atoi(char* s){
   while(s[i] >= '0' && s[i] <= '9'){
     n *= 10;
     n += s[i]-'0';
+    i++;
   }
   return sign * n;
 }

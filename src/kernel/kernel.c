@@ -101,6 +101,7 @@ void echo_chars(void)
 
 void main(void)
 {
+  puts("\nWelcome to the Framboise mini-shell!\n");
   run_shell();
 
   puts("Oops, something went wrong. Just echoing characters now...\n");
