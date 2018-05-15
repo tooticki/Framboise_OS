@@ -1,5 +1,6 @@
 #include "../common/stdio.h"
 #include "../common/stdlib.h"
+
 #include "atag.h"
 #include "blinker.h"
 #include "uart.h"
@@ -7,6 +8,7 @@
 #include "interrupts.h"
 #include "timer.h"
 #include "processes.h"
+#include "minishell.h"
 
 
 // Test memory printing memory states
@@ -37,12 +39,10 @@ void processes_test(void) {
   int i = 0;
   while (i<3) {
     process_report();
-    // puts("\nprocess x says: ");
     puts(itoa(i++));
     puts("\n");
     udelay(1000000); // 1 sec
   }
-  //while(1){}
 }
 
 
@@ -83,12 +83,6 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
   processes_init();
   puts("Done.\n");
 
-  for(int i = 0; i<6; i++){
-    puts("Creating a new process...\n");
-    create_process(processes_test, i, itoa(i), 1);
-    puts("Done.\n");    
-  }
-
   main();
 
   // Should never be reached: main doesn't return
@@ -107,20 +101,9 @@ void echo_chars(void)
 
 void main(void)
 {
-  // int i = 0;
-  while(1){}
-  /* puts("We are now in process 0. Press any key to start.");
-  getc();
+  run_shell();
 
-  // Just increments a counter ad vitam aeternam
-  while (i<10) {
-    puts("\nprocess 0 says: ");
-    puts(itoa(i++));
-    udelay(500000); // 0.5 secs
-  }
-
-  puts("Oops, something went wrong. Just echoing characters now...");*/
-
+  puts("Oops, something went wrong. Just echoing characters now...\n");
   // Echoes all entered characters... should never be reached
-  //echo_chars();
+  echo_chars();
 }

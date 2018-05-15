@@ -1,7 +1,7 @@
 #include "uart.h"
-#include "timer.h"
 #include "interrupts.h"
 #include "processes.h"
+#include "timer.h"
 
 void timer_set(uint32_t usecs) {
   timer_regs->timer1 = timer_regs->counter_low + usecs;

@@ -50,7 +50,7 @@ $(KERNEL).elf: $(C_OBJECTS) $(ASM_OBJECTS)
 # â€œcleanâ€ is not an actual output, but if we ask to generate â€œcleanâ€,
 # the command will remove all compiled files (including the kernel).
 clean:
-	rm -f $(ASM_OBJECTS) $(C_OBJECTS) $(KERNEL)
+	rm -f $(ASM_OBJECTS) $(C_OBJECTS) $(KERNEL).img $(KERNEL).elf
 
 copy: $(KERNEL).img
 	read -p "Insert the SD card and press enter." x

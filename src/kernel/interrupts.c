@@ -1,8 +1,8 @@
-#include "interrupts.h"
-#include "syscalls.h"
-
 #include "../common/stdio.h"
 #include "../common/stdlib.h"
+
+#include "syscalls.h"
+#include "interrupts.h"
 
 static interrupt_registers_t * interrupt_regs = (interrupt_registers_t *)INTERRUPTS_PENDING;
 static interrupt_handler_f handlers[NUM_IRQS];

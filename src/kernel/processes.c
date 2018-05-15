@@ -1,10 +1,11 @@
 #include "../common/stdlib.h"
 #include "../common/stdio.h"
-#include "processes.h"
+
 #include "timer.h"
 #include "uart.h"
 #include "interrupts.h"
 #include "mem.h"
+#include "processes.h"
 
 // PCB (Process Control Block) List
 void push_pcb(pcb_list_t * l, process_control_block_t * p){ // Adds a pcb in the end of the list l
@@ -34,6 +35,29 @@ process_control_block_t * pop_pcb(pcb_list_t * l){ // Pops a pcb from the beginn
 
 process_control_block_t * peek_pcb(pcb_list_t * l){ // Peeks a pcb from the beginning of the list l
   return l->first;
+}
+
+process_control_block_t * find_pcb(pcb_list_t * l, uint32_t pid){ // Finds the pcb with a given pid, returns 0 if not found
+  process_control_block_t * tmp = l->first;
+  while(tmp != 0 && tmp->pid != pid)
+    tmp = tmp->next_pcb;
+  return tmp;
+}
+
+void remove_pcb(pcb_list_t * l, process_control_block_t * p){ // Removes a pcb from the list l (only if p was in l)
+  if(p == 0) return;
+  process_control_block_t * tmp = l->first;
+  if(tmp == 0) return;
+  if(l->first == p){
+    pop_pcb(l);
+    return;
+  }
+  while(tmp->next_pcb != p && tmp->next_pcb != 0){
+    tmp = tmp->next_pcb;
+  }  
+  if(tmp == 0) return;  
+  tmp->next_pcb = tmp->next_pcb;
+  p->next_pcb = 0;
 }
 
 // Processes
@@ -238,4 +262,22 @@ void reap(void){ // Free all resources associated with a process, context switch
 
   // Context Switch: enable interrupts, sets timer, never returns
   switch_to_thread(old_thread, new_thread);
+}
+
+int kill(uint32_t pid){
+  process_control_block_t * found_process = 0;
+  if (pid == current_process->pid){
+    reap();
+    return 1;
+  }
+  for(int i = 0; i <= MAX_PRIORITY; i++){
+    found_process = find_pcb(&run_queue[i], pid);
+    if(found_process != 0){
+      remove_pcb(&run_queue[i], found_process);
+      break;
+    }
+  }
+  if(found_process == 0)
+    return -1;
+  return 1;
 }

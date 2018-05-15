@@ -1,7 +1,8 @@
-#include "syscalls.h"
 #include "../common/stdio.h"
 #include "../common/stdlib.h"
+
 #include "processes.h"
+#include "syscalls.h"
 
 sys_function_t syscalls_table[100];
 

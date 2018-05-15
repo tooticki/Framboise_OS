@@ -1,8 +1,9 @@
-#include "mem.h"
 #include <limits.h>
-#include "atag.h"
 #include "../common/stdlib.h"
 #include "../common/stdio.h"
+
+#include "atag.h"
+#include "mem.h"
 
 // Heap
 

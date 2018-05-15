@@ -38,9 +38,11 @@ typedef struct {
 } pcb_list_t;
 
 //pcb_list_t pcb_list_init(void);
-void push_pcb(pcb_list_t * l, process_control_block_t * p); // Adds a pcb in the end of the list l
-process_control_block_t * pop_pcb(pcb_list_t * l);          // Pops a pcb from the beginning of the list l
-process_control_block_t * peek_pcb(pcb_list_t * l);         // Peeks a pcb from the beginning of the list l
+void push_pcb(pcb_list_t * l, process_control_block_t * p);       // Adds a pcb in the end of the list l
+process_control_block_t * pop_pcb(pcb_list_t * l);                // Pops a pcb from the beginning of the list l
+process_control_block_t * peek_pcb(pcb_list_t * l);               // Peeks a pcb from the beginning of the list l
+process_control_block_t * find_pcb(pcb_list_t * l, uint32_t pid); // Looks for the pcb with a given pid, returns 0 if not found
+void remove_pcb(pcb_list_t * l, process_control_block_t * p);     // Removes a pcb from the list l (only if p was in l)
 
 // Thread function
 typedef void (*kthread_function_f)(void);
@@ -49,6 +51,7 @@ typedef void (*kthread_function_f)(void);
 void processes_init(void);
 void create_process(kthread_function_f thread_func, unsigned int priority, char * name, int name_len);
 void reap(void);
+int kill(uint32_t pid); // returns -1 if Not Found
 void schedule(void);
 
 void run_queues_report(void);

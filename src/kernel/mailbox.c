@@ -1,10 +1,10 @@
 // NEVER ACTUALLY USED IN KERNEL CODE
 // THIS FILE HASN'T BEEN REVIEWED AND IS DIRTY
-
-#include "mailbox.h"
 #include "../common/stdlib.h"
+
 #include "mem.h"
 #include "uart.h"
+#include "mailbox.h"
 
 int mailbox_send(mailbox_message_t msg){
   uart_puts("    Sending a message\n");  // Debugging
