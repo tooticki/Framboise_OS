@@ -9,6 +9,7 @@ _start:	// put the beginning of the C-stack (core starts at 0x8000)
 	// argument to C-function kernel_main
 	mov r2, #0x100
 	bl kernel_main
-
+	b halt
+	
 halt:	wfe
 	b halt

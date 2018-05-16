@@ -31,10 +31,18 @@ install_exceptions_vector_table: // moves the Interrupt Vector Table at adress 0
     pop     {r4, r5, r6, r7, r8, r9}
     blx     lr
 
+
+// When an IRQ exception occurs, the processor switches from whatever
+// mode it was in to IRQ mode. IRQ mode has its own stack and its
+// own versions of a few registers, including sp and cpsr, that are
+// separate from the normal registers. It will make life easier in the
+// long run if we change from IRQ mode back to supervisor mode, which is
+// what we started with.
+
 irq_handler_asm_wrapper:
     sub     lr, lr, #4      // Adjsut return address
-    srsdb   sp!, #0x13      // Save irq lr and irq spsp to supervisor stack, and save the resulting stack pointer as the current stack pointer
-    cpsid   if, #0x13       // Switch to supervisor mode with interrupts disabled
+    srsdb   sp!, #0x13      // Save irq lr and irq spsp to the IRQ stack, and save the resulting stack pointer as the current stack pointer
+    cpsid   if, #0x13       // Switch to IRQ mode with interrupts disabled
     push    {r0-r3, r12, lr}// Save the caller save registers
     and     r1, sp, #4      // Make sure stack is 8 byte aligned
     sub     sp, sp, r1
@@ -47,21 +55,25 @@ irq_handler_asm_wrapper:
 
 
 software_interrupt_handler_asm_wrapper:
-//	sub     lr, lr, #4
-	stmdb	sp!,{r0-r3,r12,lr}		/* state save from compiled code */
-	bl	software_interrupt_handler      /* SWInterrupt: call C function here */
-	ldmia	sp!,{r0-r3,r12,lr}		/* state restore from compiled code */
-	movs	pc, lr				/* adjust return */
+    stmdb   sp!,{r0-r3,r12,lr}	       // State save from compiled code */
+    and     r2, sp, #4                 // Make sure stack is 8 byte aligned	
+    sub     sp, sp, r2
+    push    {r2}                       // Save the stack adjustment	
+    bl	    software_interrupt_handler // SWInterrupt: call C function here
+    pop     {r2}
+    add     sp, sp, r2                 // Adjust the stack
+    ldmia   sp!,{r0-r3,r12,lr}	       // Restore state from compiled code */
+    movs    pc, lr		       // Adjust return
 
-   ;; sub     lr, lr, #4      // Adjsut return address
-   ;; srsdb   sp!, #0x13      // Save irq lr and irq spsp to supervisor stack, and save the resulting stack pointer as the current stack pointer
-   ;; cpsid   if, #0x13       // Switch to supervisor mode with interrupts disabled
-   ;; push    {r0-r3, r12, lr}// Save the caller save registers
-   ;; and     r2, sp, #4      // Make sure stack is 8 byte aligned
-   ;; sub     sp, sp, r2
-   ;; push    {r2}            // Save the stack adjustment
-   ;; bl      software_interrupt_handler
-   ;; pop     {r2}            // Get the stack adjustment
-   ;; add     sp, sp, r2
-   ;; pop     {r0-r3, r12, lr}// Revert the caller save registers
-   ;; rfeia   sp!             // Load the saved return address and program state register from before the interrupt from the stack and return 
+//  add     lr, lr, #4      // Adjsut return address
+//  srsdb   sp!, #0x13      // Save irq lr and irq spsp to supervisor stack, and save the resulting stack pointer as the current stack pointer
+//  cpsid   if, #0x13       // Switch to supervisor mode with interrupts disabled
+//  push    {r0-r3, r12, lr}// Save the caller save registers
+//    and     r2, sp, #4      // Make sure stack is 8 byte aligned
+ //   sub     sp, sp, r2
+//    push    {r2}            // Save the stack adjustment
+//    bl      software_interrupt_handler
+//    pop     {r2}            // Get the stack adjustment
+//    add     sp, sp, r2
+//    pop     {r0-r3, r12, lr}// Revert the caller save registers
+//    rfeia   sp!             // Load the saved return address and program state register from before the interrupt from the stack and return 

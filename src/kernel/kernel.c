@@ -8,6 +8,7 @@
 #include "interrupts.h"
 #include "timer.h"
 #include "processes.h"
+#include "syscalls.h"
 #include "minishell.h"
 
 
@@ -53,8 +54,8 @@ void main(void);
 void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
 {
   (void) r0; // Avoid warning for r0 not being used
-  (void) r1; // Ditto r1
-
+  (void) r1; // Ditto 
+  
   uart_init();
 
   puts("Hello, I'm Framboise OS\n");
@@ -75,9 +76,11 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
   mem_init((atag_t *)atags);
   puts("Done\n");
 
-  /*puts("Initializing system calls...\n");
+  print_gen_memory_state();
+  
+  puts("Initializing system calls...\n");
   syscalls_init();
-  puts("Done\n");*/
+  puts("Done\n");
 
   puts("Initializing processes...\n");
   processes_init();
@@ -102,8 +105,10 @@ void echo_chars(void)
 void main(void)
 {
   puts("\nWelcome to the Framboise mini-shell!\n");
+  user_puts("PRINT ME\n");
+  user_puts("PRINT ME AGAIN\n");
+  puts("Syscalls test done\n");
   run_shell();
-
   puts("Oops, something went wrong. Just echoing characters now...\n");
   // Echoes all entered characters... should never be reached
   echo_chars();

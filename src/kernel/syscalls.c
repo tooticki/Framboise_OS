@@ -1,6 +1,7 @@
 #include "../common/stdio.h"
 #include "../common/stdlib.h"
 
+#include "interrupts.h"
 #include "processes.h"
 #include "syscalls.h"
 
@@ -10,13 +11,14 @@ sys_function_t syscalls_table[100];
 // Calls syscall #n, passing it an argument
 void syscall(unsigned int n, void *arg){ // arguments are already in r0 and r1 ;-)
   (void)n;
-  (void)arg;
-  __asm__ __volatile__("SWI #0");
+  puts("");
+  __asm__ __volatile__ ("mov r1, %0; SWI #0 " : :"g" (arg)); // moves arg in r1, runs SWI
+
 }
 
 // Functions implementing system calls
 void sys_puts(void *s){
-  puts(s);
+  puts((char *) s);
 }
 
 typedef struct {

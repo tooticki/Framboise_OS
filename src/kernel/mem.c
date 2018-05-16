@@ -143,7 +143,7 @@ page_t * peek_free_page(){ // Peeks a page from the beginning of the list
 // From boot.S
 extern uint8_t __end;
 
-static uint32_t num_pages;
+static uint32_t num_pages, mem_size;
 static page_t * all_pages_array;
 
 void * alloc_page(void) {
@@ -180,7 +180,7 @@ void free_page(void * ptr) {
 // Memory initialization
 
 void mem_init(atag_t * atags) {
-  uint32_t mem_size, page_array_len, page_array_end, kernel_pages, i;
+  uint32_t  page_array_len, page_array_end, kernel_pages, i;
   
   // Get the total number of pages
   mem_size = get_mem_size(atags);
@@ -223,6 +223,9 @@ void mem_init(atag_t * atags) {
 void print_gen_memory_state(){
   // General information
   puts("\n*** Memory information\n\n");
+  puts("  Size of the whole memory: ");
+  puts(itoa(mem_size));
+  puts(" bytes\n");
   puts("  Size of the heap: ");
   puts(itoa(KERNEL_HEAP_SIZE));
   puts(" bytes\n");
