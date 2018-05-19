@@ -76,7 +76,7 @@ int current_priority;
 pcb_list_t run_queue[MAX_PRIORITY+1];     
 
 extern uint8_t __end; // From boot.S
-extern void switch_to_thread(process_saved_state_t * old, process_saved_state_t * new); // From context_switch.S
+extern void switch_to_thread(process_control_block_t * old, process_control_block_t * new); // From context_switch.S
 
 void run_queues_report(void) {
   for(int i = 0; i <= MAX_PRIORITY; i++){
@@ -210,7 +210,7 @@ void schedule(void) {
   // Context Switch
   // Implemented in context_switch.S. This never returns, calls
   // set_timer(10000), enables interrupts
-  switch_to_thread(old_thread->saved_state, new_thread->saved_state); 
+  switch_to_thread(old_thread, new_thread); 
 }
 
 void reap(void){ // Free all resources associated with a process, context switch immediately
@@ -244,7 +244,7 @@ void reap(void){ // Free all resources associated with a process, context switch
   kfree(old_thread);
 
   // Context Switch: enable interrupts, sets timer, never returns
-  switch_to_thread(old_thread->saved_state, new_thread->saved_state);
+  switch_to_thread(old_thread, new_thread);
 }
 
 int kill(uint32_t pid){

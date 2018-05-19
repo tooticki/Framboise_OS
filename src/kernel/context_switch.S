@@ -11,10 +11,10 @@ switch_to_thread:
     push    {sp}
     mrs     r12, cpsr   // Get the current program state register
     push    {r0-r12}    // Save all general purpose registers and program state
-    str     sp, r0    // Store the stack pointer into the saved_state field of the current process
+    str     sp, [r0]    // Store the stack pointer into the saved_state field of the current process
 
     // Restore the new thread's state
-    ldr     sp, r1      // Load the stack pointer of the new process
+    ldr     sp, [r1]      // Load the stack pointer of the new process
     ldr     r0, =#(10000) // Call timer_set(10000), so the timer will go off in 10ms
     bl      timer_set
     pop     {r0-r12}      // restore the general purpose registers
