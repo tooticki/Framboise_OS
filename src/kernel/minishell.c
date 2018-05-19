@@ -1,8 +1,9 @@
 #include "../common/stdio.h"
 #include "../common/stdlib.h"
 
-#include "processes.h"
 #include "timer.h"
+#include "processes.h"
+#include "priority_scheduler.h"
 #include "minishell.h"
 
 void shell_help(){
@@ -15,10 +16,10 @@ void shell_help(){
 }
 
 void test_process(){
-  int i = 0;
-  while (i<4) {
+  int i = 4;
+  while (i>=0) {
     process_report();
-    puts(itoa(i++));
+    puts(itoa(i--));
     puts("\n");
     udelay(3000000); // 3 sec
   }

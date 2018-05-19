@@ -4,6 +4,7 @@
 #include "atag.h"
 
 uint32_t get_mem_size(atag_t * tag) {
+  (void) tag;
   return 1024*1024*256;
 }
 

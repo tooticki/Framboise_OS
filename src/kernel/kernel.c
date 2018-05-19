@@ -8,6 +8,7 @@
 #include "interrupts.h"
 #include "timer.h"
 #include "processes.h"
+#include "priority_scheduler.h"
 #include "syscalls.h"
 #include "minishell.h"
 

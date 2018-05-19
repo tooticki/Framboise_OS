@@ -60,7 +60,7 @@ void software_interrupt_handler(unsigned int r0, unsigned int r1 ) {
   DISABLE_INTERRUPTS();
 
   if(r0 < syscalls_table_length)
-    syscalls_table[r0] (r1);
+    syscalls_table[r0] ((void*)r1);
   else
     {} // TODO: add error treatment here
 

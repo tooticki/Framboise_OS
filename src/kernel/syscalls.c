@@ -3,6 +3,7 @@
 
 #include "interrupts.h"
 #include "processes.h"
+#include "priority_scheduler.h"
 #include "syscalls.h"
 
 sys_function_t syscalls_table[100];
@@ -44,7 +45,7 @@ typedef struct {
 
 void sys_create_process(void * args){
   create_process_args_t * tmp = args;
-  create_process(tmp->thread_func, tmp->priority, tmp->name, tmp->name_len);
+  register_process(create_process(tmp->thread_func, tmp->name, tmp->name_len), tmp->priority); //TODO: Should be changed 
 }
 
 // Populates the syscalls_table array. Should be called once at boot
