@@ -75,8 +75,6 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
   puts("Initializing Memory Manager...\n");
   mem_init((atag_t *)atags);
   puts("Done\n");
-
-  print_gen_memory_state();
   
   puts("Initializing system calls...\n");
   syscalls_init();
@@ -105,8 +103,8 @@ void echo_chars(void)
 void main(void)
 {
   puts("\nWelcome to the Framboise mini-shell!\n");
-  user_puts("PRINT ME\n");
-  user_puts("PRINT ME AGAIN\n");
+  //  user_puts("PRINT ME\n");
+  //  user_puts("PRINT ME AGAIN\n");
   puts("Syscalls test done\n");
   run_shell();
   puts("Oops, something went wrong. Just echoing characters now...\n");

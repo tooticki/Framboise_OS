@@ -8,6 +8,7 @@
 void shell_help(){
   puts("Possible commands:\n");
   puts("  C <process name> <priority>  Create a process\n");
+  //  puts("  R <process name> <priority>  Register the process\n");
   puts("  K <process pid>              Kill a process\n");
   puts("  L                            Display the list of all processes\n");
   puts("  H                            Dipslay this information\n");
@@ -15,12 +16,11 @@ void shell_help(){
 
 void test_process(){
   int i = 0;
-  while (i<10) {
-    //process_report();
-    //puts(itoa(i++));
-    //puts("\n");
-    i++;
-    udelay(5000000); // 5 sec
+  while (i<4) {
+    process_report();
+    puts(itoa(i++));
+    puts("\n");
+    udelay(3000000); // 3 sec
   }
 }
 
@@ -47,7 +47,7 @@ void shell_create_process(char* s){
   }
   priority_start = i;
   priority = atoi(s+priority_start);
-  create_process(test_process, priority, s+name_start, name_len);
+  register_process(create_process(test_process, s+name_start, name_len), priority); ///TODO: add possibility to create without registering
   puts("Process ");
   puts(s+name_start);
   puts(" was succesfully created\n");
