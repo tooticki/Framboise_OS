@@ -47,13 +47,6 @@ void remove_pcb(pcb_list_t * l, process_control_block_t * p);     // Removes a p
 // Thread function
 typedef void (*kthread_function_f)(void);
 
-// Processes' input buffer
-typedef struct process_info {
-  char name[20];
-  uint32_t runtime;
-  uint32_t period;
-}
-
 // Process' functions
 void processes_init(void);
 void create_process(kthread_function_f thread_func, unsigned int priority, char * name, int name_len);
