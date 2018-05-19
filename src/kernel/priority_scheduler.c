@@ -1,3 +1,23 @@
+/* Priority-based scheduling algorithm.
+
+   Round Robin schedule algorithm works as following: all processes
+   are stored in the run queue and each time quantum, the next process
+   in the queue replaces the process working currently.
+
+   Priority-based Round Robin is based on the previous and features
+   handling of priorities: for each priority value, we store a run
+   queue. While scheduling, we first check the processes with the
+   highest proprity MAX_PRIORITY, and descend to queues with lower
+   priorities only if it was empty. We repeat this until a process is
+   found or the current priority is reached. If there is no processes
+   in the current priority queue, continue running the current
+   process.
+
+   The scheduling algorithm used here is the last one.
+   Processes are wrapped in "pcb-nodes" here
+   Run queues have type "pcb_list_t"
+*/
+
 #include "../common/stdlib.h"
 #include "../common/stdio.h"
 
@@ -7,8 +27,8 @@
 #include "priority_scheduler.h"
 
 
-// PCB (Process Control Block) List
-void push_node(pcb_list_t * l, pcb_node_t * p){ // Adds a pcb in the end of the list l
+// PCB-List functions
+void push_node(pcb_list_t * l, pcb_node_t * p){
   if(l->first == 0){
     l->first = p;
     l->last = p;
@@ -20,7 +40,7 @@ void push_node(pcb_list_t * l, pcb_node_t * p){ // Adds a pcb in the end of the 
   p->next_node = 0;
 }
 
-pcb_node_t * pop_node(pcb_list_t * l){ // Pops a pcb from the beginning of the list l
+pcb_node_t * pop_node(pcb_list_t * l){
   if(l->first == 0)
     return 0;
   else{
@@ -32,18 +52,18 @@ pcb_node_t * pop_node(pcb_list_t * l){ // Pops a pcb from the beginning of the l
   }
 }
 
-pcb_node_t * peek_node(pcb_list_t * l){ // Peeks a pcb from the beginning of the list l
+pcb_node_t * peek_node(pcb_list_t * l){
   return l->first;
 }
 
-pcb_node_t * find_node(pcb_list_t * l, uint32_t pid){ // Finds the pcb with a given pid, returns 0 if not found
+pcb_node_t * find_node(pcb_list_t * l, uint32_t pid){
   pcb_node_t * tmp = l->first;
   while(tmp != 0 && tmp->process->pid != pid)
     tmp = tmp->next_node;
   return tmp;
 }
 
-void remove_node(pcb_list_t * l, pcb_node_t * p){ // Removes a pcb from the list l (only if p was in l)
+void remove_node(pcb_list_t * l, pcb_node_t * p){
   if(p == 0) return;
   pcb_node_t * tmp = l->first;
   if(tmp == 0) return;
@@ -59,17 +79,18 @@ void remove_node(pcb_list_t * l, pcb_node_t * p){ // Removes a pcb from the list
   p->next_node = 0;
 }
 
-// Scheduler
+// Scheduler functions
 
-// Priorities are numbers from 0 to MAX_PRIORITY
-// The greater the priority of the process, the more CPU time it is
-// supposed to take.
+/* Priorities are numbers from 0 to MAX_PRIORITY
+ The greater the priority of the process, the more CPU time it is
+ supposed to take.*/
+
 #define MAX_PRIORITY 10
-pcb_node_t * current_node;
-pcb_node_t * old_current_node;
+pcb_node_t * current_node;     // Currently running process
+pcb_node_t * old_current_node; // The previous process
 
-// Run Queue = list of processes willing to run.
-// run_queue[p] is a queue of processes with priority p.
+// Run Queue is the list of processes willing to run
+// Here, run_queue[p] is a queue of processes with priority p
 pcb_list_t run_queue[MAX_PRIORITY+1];     
 
 process_control_block_t * get_current_process(void){
@@ -102,21 +123,6 @@ void register_process(process_control_block_t * process, unsigned int priority){
 }
 
 
-/* Round Robin schedule algorithm works as following: all processes
-   are stored in the run queue and each time quantum, the next process
-   in the queue replaces the process working currently.
-
-   Priority-based Round Robin is based on the previous and features
-   handling of priorities: for each priority value, we store a run
-   queue. While scheduling, we first check the processes with the
-   highest proprity MAX_PRIORITY, and descend to queues with lower
-   priorities only if it was empty. We repeat this until a process is
-   found or the current priority is reached. If there is no processes
-   in the current priority queue, continue running the current
-   process.
-
-   The algorithm we use here is the last one.
-*/
 process_control_block_t * pop_process(){
   int p = MAX_PRIORITY, old_p = current_node->priority;
   pcb_node_t * new_node;
@@ -205,7 +211,7 @@ void print_processes_list(void){
   }
 }
 
-void process_report(void){
+void current_process_report(void){
   pcb_node_t * node = current_node;
   puts("I'm process ");
   puts(node->process->process_name);
