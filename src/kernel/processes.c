@@ -20,7 +20,6 @@ void push_pcb(pcb_list_t * l, process_control_block_t * p){ // Adds a pcb in the
   p->next_pcb = 0;
 }
 
-
 process_control_block_t * pop_pcb(pcb_list_t * l){ // Pops a pcb from the beginning of the list l
   if(l->first == 0)
     return 0;
@@ -75,10 +74,9 @@ int current_priority;
 // Run Queue = list of processes willing to run.
 // run_queue[p] is a queue of processes with priority p.
 pcb_list_t run_queue[MAX_PRIORITY+1];     
-  //  pcb_list_t all_processes;  // List of all existing processes
 
 extern uint8_t __end; // From boot.S
-extern void switch_to_thread(process_control_block_t * old, process_control_block_t * new); // From boot.S
+extern void switch_to_thread(process_control_block_t * old, process_control_block_t * new); // From context_switch.S
 
 void run_queues_report(void) {
   for(int i = 0; i <= MAX_PRIORITY; i++){
@@ -114,36 +112,6 @@ void process_report(void){
   puts(", pid ");
   puts(itoa(pcb.pid));
   puts(": ");
-  /*puts(itoa(pcb.saved_state->r0));
-  puts("  ");
-  puts(itoa(pcb.saved_state->r1));
-  puts("  ");
-  puts(itoa(pcb.saved_state->r2));
-  puts("  ");
-  puts(itoa(pcb.saved_state->r3));
-  puts("  ");
-  puts(itoa(pcb.saved_state->r4));
-  puts("  ");
-  puts(itoa(pcb.saved_state->r5));
-  puts("  ");
-  puts(itoa(pcb.saved_state->r6));
-  puts("  ");
-  puts(itoa(pcb.saved_state->r7));
-  puts("  ");
-  puts(itoa(pcb.saved_state->r8));
-  puts("  ");
-  puts(itoa(pcb.saved_state->r9));
-  puts("  ");
-  puts(itoa(pcb.saved_state->r10));
-  puts("  ");
-  puts(itoa(pcb.saved_state->r11));
-  puts("  ");
-  puts(itoa(pcb.saved_state->cpsr));
-  puts("  ");
-  puts(itoa(pcb.saved_state->sp));
-  puts("  ");
-  puts(itoa(pcb.saved_state->lr));
-  puts("\n");*/
 }
 
 void processes_init(void) {
@@ -151,8 +119,7 @@ void processes_init(void) {
     run_queue[i].first = 0;
     run_queue[i].last = 0;
   }
-    //  all_processes.first = 0;
-    //  all_processes.last = 0;
+
   process_control_block_t * main_pcb;
   
   // Allocate and initailize the block
@@ -162,7 +129,6 @@ void processes_init(void) {
   memcpy(main_pcb->process_name, "Init", 5);
 
   // Add main_pcb to all process list.  It is already running, so don't add it to the run queues
-    //  push_pcb(&all_processes, main_pcb);
   main_pcb->next_pcb = 0;
 
   current_process = main_pcb;

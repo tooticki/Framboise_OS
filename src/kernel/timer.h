@@ -15,8 +15,8 @@ typedef struct {
 
 typedef struct {
   timer_control_reg_t control; // controlling timers
-  uint32_t counter_low;        // ticks every microsecond
-  uint32_t counter_high;       // ticks every microsecond
+  uint32_t counter_low;        // ticks every microsecond (low 32 bits 1.19h)
+  uint32_t counter_high;       // ticks every microsecond (high 32 bits)
   uint32_t timer0;             // used by GPU
   uint32_t timer1;             // free to be used
   uint32_t timer2;             // used by GPU
