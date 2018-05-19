@@ -72,18 +72,12 @@ void schedule(void) {
 
 void reap(void){ // Free all resources associated with a process, context switch immediately
   DISABLE_INTERRUPTS();
-  puts("1:I'm in reap\n");
-  print_processes_list();
   process_control_block_t * old_thread = get_current_process(),  * new_thread = pop_another_process(); //The order should be kept since pop_process changes the current process
-  puts("2:I'm still in reap\n");
-  print_processes_list();
   // Do nothing while all run queues are empty
   while(new_thread == 0){ 
       new_thread = pop_another_process();
   }
 
-  puts("3:I'm still in reap\n");
-  print_processes_list();
   // Free the resources used by the old process. Technically, we are
   // using dangling pointers here, but since interrupts are disabled
   // and we only have one core, it should still be fine
@@ -234,12 +228,11 @@ process_control_block_t * pop_process(){
 }
 
 process_control_block_t * pop_another_process(){
-  int p = MAX_PRIORITY, old_p = current_node->priority;
+  int p = MAX_PRIORITY;
   pcb_node_t * new_node;
-  while(p >= old_p && run_queue[p].first == 0) p--; // Find a nonempty queue of the highest priority
+  while(p >= 0 && run_queue[p].first == 0) p--; // Find a nonempty queue of the highest priority
   
-  // If there are no processes with higher priority, the current
-  // process continues to run
+  // If there are no processes, nothing happens
   if (p < 0){
     return 0;
   }  
@@ -307,7 +300,7 @@ void print_processes_list(void){
 
 void process_report(void){
   pcb_node_t * node = current_node;
-  puts("\nI'm process ");
+  puts("I'm process ");
   puts(node->process->process_name);
   puts(", pid ");
   puts(itoa(node->process->pid));
