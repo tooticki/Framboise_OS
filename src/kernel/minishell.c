@@ -16,12 +16,12 @@ void shell_help(){
 }
 
 void test_process(){
-  int i = 4;
+  int i = 5;
   while (i>=0) {
-    process_report();
-    puts(itoa(i--));
+    current_process_report();
+    puts(itoa(--i));
     puts("\n");
-    udelay(3000000); // 3 sec
+    udelay(5000000); // 5 sec
   }
 }
 

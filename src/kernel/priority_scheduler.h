@@ -32,11 +32,11 @@ void scheduler_init(process_control_block_t * init_process); // Initialize the s
 void register_process(process_control_block_t * process, unsigned int priority); 
 
 process_control_block_t * pop_process();                     // Choose the next proc to run and removes it from
-                                                             // the queue; updates current_node; returns 0 if
+                                                             // the queues; updates current_node; returns 0 if
                                                              // the schduler doesn't want to change the process
 
 process_control_block_t * pop_another_process();             // Choose the next proc to run and removes it from
-                                                             // the queue; updates current_node; returns 0 if 
+                                                             // the queues; updates current_node; returns 0 if 
                                                              // and only if there is no more processes
 
 void push_current_process();                                 // Put the current process in the Run Queues
@@ -49,5 +49,6 @@ uint32_t current_pid();                                      // Return the pid o
 // Printing information functions
 void run_queues_report(void);      // Print for each queue if it's empty or not
 void print_processes_list(void);   // Display the list of running processes with their names, pids and priorities
+void process_report(pcb_node_t * p); // Display the name, pid and priority of the current process
 void current_process_report(void); // Display the name, pid and priority of the current process
 #endif

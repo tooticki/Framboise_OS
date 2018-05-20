@@ -40,7 +40,7 @@ void memory_test(void){
 void processes_test(void) {
   int i = 0;
   while (i<3) {
-    process_report();
+    //current_process_report();
     puts(itoa(i++));
     puts("\n");
     udelay(1000000); // 1 sec

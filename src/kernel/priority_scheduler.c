@@ -151,7 +151,8 @@ process_control_block_t * pop_another_process(){
   }  
   // Get the next thread to run
   new_node = pop_node(&run_queue[p]);
-  old_current_node = current_node;
+  kfree(current_node); // will be never called anymore
+  old_current_node = 0;
   current_node = new_node;
   return new_node->process;
 }
@@ -187,37 +188,29 @@ void run_queues_report(void) {
   }
 }
 
-void print_processes_list(void){
-  pcb_node_t * tmp;
-  puts("name: ");
-  puts(current_node->process->process_name);
-  puts(" pid:");
-  puts(itoa(current_node->process->pid));
-  puts(" priority:");
-  puts(itoa(current_node->priority));
-  puts("  (running) \n");
-  for(int i = 0; i <= MAX_PRIORITY; i++){
-    tmp = run_queue[i].first;
-    while(tmp != 0){
-      puts("name: ");
-      puts(tmp->process->process_name);
-      puts(" pid:");
-      puts(itoa(tmp->process->pid));
-      puts(" priority:");
-      puts(itoa(i));
-      puts("\n");
-      tmp = tmp->next_node;
-    }
-  }
+void process_report(pcb_node_t * p){
+  puts("Process ");
+  puts(p->process->process_name);
+  puts(", pid ");
+  puts(itoa(p->process->pid));
+  puts(", priority ");
+  puts(itoa(p->priority));
 }
 
-void current_process_report(void){
-  pcb_node_t * node = current_node;
-  puts("I'm process ");
-  puts(node->process->process_name);
-  puts(", pid ");
-  puts(itoa(node->process->pid));
-  puts(", priority ");
-  puts(itoa(node->priority));
-  puts(": ");
+void current_process_report(){
+  process_report(current_node);
+}
+
+void print_processes_list(void){
+  pcb_node_t * p;
+  process_report(current_node);
+  puts("  (running) \n");
+  for(int i = 0; i <= MAX_PRIORITY; i++){
+    p = run_queue[i].first;
+    while(p != 0){
+      process_report(p);
+      puts("\n");
+      p = p->next_node;
+    }
+  }  
 }
