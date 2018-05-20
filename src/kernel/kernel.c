@@ -82,7 +82,7 @@ void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags)
   puts("Done\n");
 
   puts("Initializing processes...\n");
-  processes_init();
+  processes_init(PRIORITY);
   puts("Done.\n");
 
   main();

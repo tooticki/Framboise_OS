@@ -17,8 +17,8 @@ void shell_help(){
 
 void test_process(){
   int i = 5;
-  while (i>=0) {
-    current_process_report();
+  while (i>0) {
+    scheduler->current_process_report();
     puts(itoa(--i));
     puts("\n");
     udelay(5000000); // 5 sec
@@ -48,7 +48,7 @@ void shell_create_process(char* s){
   }
   priority_start = i;
   priority = atoi(s+priority_start);
-  register_process(create_process(test_process, s+name_start, name_len), priority); ///TODO: add possibility to create without registering
+  scheduler->register_process(create_process(test_process, s+name_start, name_len), (void *) (&priority)); ///TODO: add possibility to create without registering
   puts("Process ");
   puts(s+name_start);
   puts(" was succesfully created\n");
@@ -73,11 +73,11 @@ void shell_kill_process(char* s){
 }
 
 void shell_list(void){
-  print_processes_list();
+  scheduler->print_processes_list();
 }
 
 void shell_error(){
-  puts("Shell error: Invalid command, use H for help"); 
+  puts("Shell error: Invalid command, use H for help\n"); 
 }
 
 void parse(char* s){

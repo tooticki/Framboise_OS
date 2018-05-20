@@ -4,9 +4,9 @@
 #include "interrupts.h"
 #include "mem.h"
 #include "priority_scheduler.h"
+#include "rm_scheduler.h"
 #include "processes.h"
 
-// Processes
 
 static uint32_t next_proc_num = 1;
 #define NEW_PID next_proc_num++;
@@ -16,16 +16,25 @@ extern uint8_t __end; // From boot.S
                       // From context_switch.S
 extern void switch_to_thread(process_control_block_t * old, process_control_block_t * new);
 
-void processes_init(void) {
+void processes_init(unsigned int scheduler_type) {
   process_control_block_t * main_pcb;
- 
+
+  switch(scheduler_type){
+  case PRIORITY:
+    scheduler = &priority_scheduler;
+    break;
+  case RATE_MONOTONIC:
+    scheduler = &rate_monotonic_scheduler;
+    break;
+  }
+  
   // Allocate and initailize the block
   main_pcb = kmalloc(sizeof(process_control_block_t));
   main_pcb->stack_page = (void *)&__end;
   main_pcb->pid = NEW_PID;
   memcpy(main_pcb->process_name, "Init", 5);
 
-  scheduler_init(main_pcb);
+  scheduler->scheduler_init(main_pcb);
   
   timer_set(10000);
 }
@@ -56,7 +65,7 @@ process_control_block_t * create_process(kthread_function_f thread_func, char * 
 void schedule(void) {
   DISABLE_INTERRUPTS();
   // The order must be kept since pop_process() changes the current process
-  process_control_block_t * old_thread = get_current_process(), * new_thread = pop_process(); 
+  process_control_block_t * old_thread = scheduler->get_current_process(), * new_thread = scheduler->pop_process(); 
   
   // If there are no more processes to run then continue to run the current one
   if(new_thread == 0){ 
@@ -64,7 +73,7 @@ void schedule(void) {
     ENABLE_INTERRUPTS();
     return;
   }
-  push_current_process(); // Push the old process in the run queue
+  scheduler->push_current_process(); // Push the old process in the run queue
    
   // Context Switch
   // Implemented in context_switch.S. This never returns, calls
@@ -75,10 +84,10 @@ void schedule(void) {
 void reap(void){ // Free all resources associated with a process, context switch immediately
   DISABLE_INTERRUPTS();
   //The order must be kept since pop_process() changes the current process
-  process_control_block_t * old_thread = get_current_process(),  * new_thread = pop_another_process(); 
+  process_control_block_t * old_thread = scheduler->get_current_process(),  * new_thread = scheduler->pop_another_process(); 
 
   while(new_thread == 0) // Do nothing while all run queues are empty
-      new_thread = pop_another_process();
+      new_thread = scheduler->pop_another_process();
  
   // Free the resources used by the old process. Technically, we are
   // using dangling pointers here, but since interrupts are disabled
@@ -92,13 +101,14 @@ void reap(void){ // Free all resources associated with a process, context switch
 }
 
 int kill(uint32_t pid){
-  if (pid == current_pid()){
+  if (pid == scheduler->current_pid()){
     reap();
     return 1;
   }
   DISABLE_INTERRUPTS();
-  int res = remove_by_pid(pid); // return -1 if Not Found, return 1 otherwise
+  int res = scheduler->remove_by_pid(pid); // return -1 if Not Found, return 1 otherwise
   ENABLE_INTERRUPTS();
   return res;
 }
+
 
