@@ -58,6 +58,7 @@ void add_to_queues(node_t * p);              // Put p into a queue with the appr
 void remove_queue(run_queue_t * q);             // Remove q from the list of queues
 
 static void push_node(run_queue_t * q, node_t * p){
+  p->next_node = 0;
   if(q->first == 0){
     q->first = p;
     q->last = p;
@@ -66,7 +67,6 @@ static void push_node(run_queue_t * q, node_t * p){
     q->last->next_node = p;
     q->last = p;
   }
-  p->next_node = 0;
 }
 
 static node_t * pop_node(run_queue_t * q){ //A queue is never empty

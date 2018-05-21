@@ -46,6 +46,7 @@ void remove_node(run_queue_t * l, node_t * p);     // Remove a pcb-node from the
 
 // Run Queue functions
 void push_node(run_queue_t * q, node_t * p){
+  p->next_node = 0;
   if(q->first == 0){
     q->first = p;
     q->last = p;
@@ -54,7 +55,6 @@ void push_node(run_queue_t * q, node_t * p){
     q->last->next_node = p;
     q->last = p;
   }
-  p->next_node = 0;
 }
 
 node_t * pop_node(run_queue_t * q){
@@ -129,20 +129,38 @@ void scheduler_init(process_control_block_t * init_process){ //should be called 
   init_node->priority = 0; // By default, the running process' priority is 0
   init_node->next_node = 0;
   current_node = init_node;
+  old_current_node = 0;
 }
 
+void print_processes_list(void); // TODO delete
+
 void register_process(process_control_block_t * process, void * arg){
-  uint32_t priority = *((uint32_t *) arg);
+  int priority = ((int) arg);
+  if(priority < 0 || priority > MAX_PRIORITY){
+    puts("Cannot register a process: priority should be between 0 and ");
+    puts(itoa(MAX_PRIORITY));
+    puts("\n");
+    return;
+  }
   node_t * new_node = kmalloc(sizeof(node_t));
+  
   new_node->process = process;
-  new_node->priority = priority;
+  new_node->priority = (uint32_t)priority;
   new_node->next_node = 0;
   push_node(&run_queue[priority], new_node); // Add process to the queue of the needed priority
+
+  print_processes_list(); // TODO: delete
+
+  puts("Process ");
+  puts(process->process_name);
+  puts(" was succesfully created\n");
 }
 
 
 process_control_block_t * pop_process(){
-  int p = MAX_PRIORITY, old_p = current_node->priority;
+  int p = MAX_PRIORITY, old_p = 0;
+  if(current_node != 0)
+    old_p = current_node->priority;
   node_t * new_node;
   while(p >= old_p && run_queue[p].first == 0) p--; // Find a nonempty queue of the highest priority
   
@@ -176,8 +194,9 @@ process_control_block_t * pop_another_process(){
 }
 
 void push_current_process(){
-  // Put the current thread back in the run queue
-  push_node(&run_queue[old_current_node->priority], old_current_node);
+  // Put the current thread back in the run queue (if it existed)
+  if(old_current_node != 0)
+    push_node(&run_queue[old_current_node->priority], old_current_node);
 }
 
 int remove_by_pid(uint32_t pid){
@@ -215,6 +234,8 @@ void process_report(node_t * p){
   puts(itoa(p->process->pid));
   puts(", priority ");
   puts(itoa(p->priority));
+  puts(", pcb address "); //TODO; ro delete
+  puts(itoa(p->process));       // TODO:to delete
   puts(" ");
 }
 

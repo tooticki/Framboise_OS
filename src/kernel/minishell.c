@@ -10,7 +10,6 @@
 
 /* *************************** Shell Functions ************************************* */
 
-
 void shell_exec_command(shell_t *shell, char *command){
   char *command_name = strtok_(command, " ");
 
@@ -46,8 +45,12 @@ void shell_error(){
   puts("Shell error: Invalid command, use H for help\n"); 
 }
 
-/* ****************************** Commands ********************************** */
-
+/* ****************************** Standart Commands ********************************** */
+void echo(void);
+void sum(void);
+void quit(void);
+void switch_shell(void);
+void help(void * shell);
 
 void echo(void){
   /* Use strtok(0, " ") to get parameters.
@@ -87,7 +90,7 @@ void quit(void){
     status = n;
 }
 
-void switch_shell(void){
+void switch_shell(void){ // TODO: kill all processes here
   char *s;
   s = strtok_(0, " ");
   if(s == 0)
@@ -121,17 +124,78 @@ void help(void *s){
   }
 }
 
+/* ****************************** Priority Scheduler Commands ********************************** */
+void pr_test_process(void);
+void pr_create(void);
+void pr_kill(void);
+void pr_list(void);
+
+void pr_test_process(){
+  int i = 5;
+  while (i>0) {
+    /*scheduler->current_process_report();
+    puts(itoa(--i));
+    puts("\n");*/
+    udelay(3000000); // 3 sec
+  }
+}
+
+void pr_create(){
+  char *name, *priority;
+  process_control_block_t * process;
+  if((name = strtok_(0, " ")) == 0){
+    puts("Usage: create <name> <priority>\n");
+    return;
+  }
+  if((priority = strtok_(0, " ")) == 0){
+    puts("Usage: create <name> <priority>\n");
+    return;
+  }
+  process = create_process(pr_test_process, name, strlen(name));
+  puts("New process address: ");
+  puts(itoa(process));
+  puts("\n");
+  scheduler->register_process(process, (void *)(atoi(priority)) ); ///TODO: add possibility to create without registering
+}
+
+void pr_kill(){
+  int pid;
+  if((pid = atoi(strtok_(0, " "))) == 0){
+    puts("Usage: kill <pid>\n");
+    return;
+  }
+  if(kill(pid) == -1){
+    puts("Shell error: No process with pid ");
+    puts(itoa(pid));
+    puts("\n");
+    return;
+  }
+  puts("Process with pid ");
+  puts(itoa(pid));
+  puts(" was succesfully killed\n");
+}
+
+void pr_list(void){
+  scheduler->print_processes_list();
+}
+
+/* ****************************** Real Time Scheduler Commands ********************************** */
+
+
 /* ****************************** Shells ********************************** */
 
 shell_t priority_shell = {
   "priority_shell",
-  4,
-  {"help", help, " - Dipslay this information"},
+  7,
+  {"help", help, "                     - Display this information"},
   {
-    {"echo", echo, " - Echo characters"},
-    {"sum", sum, "<n_1 n_2 ...> - Computes sum of the following numbers"},
-    {"switch", switch_shell, "<name> - Switch to the shell name"},
-    {"exit", quit, "<n> - Exit with status n > 1"},
+    {"echo", echo, "                     - Echo characters"},
+    {"sum", sum, "<n_1 n_2 ...>         - Compute sum of the following numbers"},
+    {"switch", switch_shell, "<name>             - Switch to the shell name"},
+    {"exit", quit, "<n>                  - Exit with status n > 1"},
+    {"create", pr_create, "<name> <priority>  - Create process with given name and priority"},
+    {"kill", pr_kill, "<pid>                - Kill a process with a given pid"},
+    {"list", pr_list, "                     - Display the list of all running processes"},
   },
 };
 
@@ -168,71 +232,3 @@ void run_shell(void){
   puts(itoa(status));
   puts("\n");
 }
-
-
-
-/* ****************************** Other funcitons ********************************** */
-
-
-void test_process(){
-  int i = 5;
-  while (i>0) {
-    scheduler->current_process_report();
-    puts(itoa(--i));
-    puts("\n");
-    udelay(5000000); // 5 sec
-  }
-}
-
-void shell_create_process(char* s){
-  int i = 0, name_start, priority_start, name_len, priority;
-  while(s[i] == ' ')
-    i++;
-  name_start = i-1;
-  while(s[i] != ' ' && s[i] != '\0')
-    i++;
-  if(s[i] == '\0'){
-    shell_error();
-    return;
-  }
-  s[i] = '\0';
-  s++;
-  name_len = i-name_start;
-  while(s[i] == ' ')
-    i++;
-  if(s[i] < '0' || s[i] > '9'){
-    shell_error();
-    return;
-  }
-  priority_start = i;
-  priority = atoi(s+priority_start);
-  scheduler->register_process(create_process(test_process, s+name_start, name_len), (void *) (&priority)); ///TODO: add possibility to create without registering
-  puts("Process ");
-  puts(s+name_start);
-  puts(" was succesfully created\n");
-}
-
-void shell_kill_process(char* s){
-  int i = 0;
-  while(s[i] == ' ')
-    i++;
-  if(s[i] < '0' || s[i] > '9'){
-    shell_error();
-    return;
-  }
-  if(kill(atoi(s+i)) == -1){
-    puts("Shell error: No such process, ");
-    puts(s+i);
-    puts("\n");
-    return;
-  }
-  puts("Process with pid ");
-  puts(s+i);
-  puts(" was succesfully killed\n");
-}
-
-void shell_list(void){
-  scheduler->print_processes_list();
-}
-
-

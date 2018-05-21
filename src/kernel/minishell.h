@@ -23,15 +23,8 @@ typedef struct shell{
 
 void shell_exec_command(shell_t *shell, char *command);
 int shell_loop(shell_t *shell);
+void shell_error(void);
 void run_shell(void);
 
-void echo(void);
-void sum(void);
-void quit(void);
-void help(void * shell);
 
-void shell_create_process(char* s);
-void shell_kill_process(char* s);
-void shell_list(void);
-void shell_error(void);
 #endif
