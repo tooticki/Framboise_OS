@@ -136,6 +136,7 @@ void pr_test_process(){
     /*scheduler->current_process_report();
     puts(itoa(--i));
     puts("\n");*/
+    i--;
     udelay(3000000); // 3 sec
   }
 }

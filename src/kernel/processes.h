@@ -55,7 +55,8 @@ typedef struct {
   void (*print_processes_list)(void);                     // Display the list of running processes with their info
 } scheduler_t;
 
-scheduler_t * scheduler; // TODO: MOVE?
+// It;s initialized in processes_init
+extern scheduler_t * scheduler; // TODO: MOVE?
 
 // Thread function
 typedef void (*kthread_function_f)(void);

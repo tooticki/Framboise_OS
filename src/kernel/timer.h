@@ -26,10 +26,10 @@ typedef struct {
 timer_registers_t * timer_regs;
 
 
+void timer_set(uint32_t usecs);
+
 // TODO: maybe they should be static?
 
-void timer_set(uint32_t usecs);
-  
 void timer_irq_handler(void);
 
 void timer_irq_clearer(void);

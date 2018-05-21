@@ -149,8 +149,6 @@ void register_process(process_control_block_t * process, void * arg){
   new_node->next_node = 0;
   push_node(&run_queue[priority], new_node); // Add process to the queue of the needed priority
 
-  print_processes_list(); // TODO: delete
-
   puts("Process ");
   puts(process->process_name);
   puts(" was succesfully created\n");

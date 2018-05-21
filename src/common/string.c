@@ -40,8 +40,8 @@ void read_line(char *buf, unsigned int size){
 
   gets(buf, size);
 
-  s = strchrs_(buf, "\n");
+  /*s = strchrs_(buf, '\0');
   if(s != 0) *s = '\0';
   else do { c = getc(); }
-    while (c != '\n'&& c != '\r' && c > 0);
+  while (c != '\n'&& c != '\r' && c > 0);*/
 }

@@ -11,6 +11,8 @@
 static uint32_t next_proc_num = 1;
 #define NEW_PID next_proc_num++;
 
+scheduler_t * scheduler;
+
 extern uint8_t __end; // From boot.S
 
                       // From context_switch.S
