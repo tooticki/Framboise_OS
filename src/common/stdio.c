@@ -23,8 +23,8 @@ void gets(char * buf, int buflen){
         buf[i] = c;
     }
     putc('\n');
-    if (c == '\n') {
-        buf[i] = '\0';
+    if (c == '\r') {
+      buf[i] = '\n';
     }
     else
       buf[i] = '\0'; // Not sure

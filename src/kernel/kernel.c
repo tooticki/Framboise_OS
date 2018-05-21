@@ -103,10 +103,9 @@ void echo_chars(void)
 
 void main(void)
 {
-  puts("\nWelcome to the Framboise mini-shell!\n");
   //  user_puts("PRINT ME\n");
   //  user_puts("PRINT ME AGAIN\n");
-  puts("Syscalls test done\n");
+  // puts("Syscalls test done\n");
   run_shell();
   puts("Oops, something went wrong. Just echoing characters now...\n");
   // Echoes all entered characters... should never be reached
