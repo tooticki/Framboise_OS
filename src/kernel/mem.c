@@ -81,7 +81,7 @@ void kfree(void *ptr) {
     }
 }
 
-// Pages (hook for future virtual memory implementation)
+// Pages (for future virtual memory implementation)
 
 // We implement a list of pages and functions to manipulate them.
 

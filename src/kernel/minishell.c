@@ -6,6 +6,7 @@
 #include "processes.h"
 #include "priority_scheduler.h"
 #include "minishell.h"
+#include "mem.h"
 
 
 /* *************************** Shell Functions ************************************* */
@@ -131,12 +132,12 @@ void pr_kill(void);
 void pr_list(void);
 
 void pr_test_process(){
-  int i = 5;
-  while (i>0) {
-    /*scheduler->current_process_report();
-    puts(itoa(--i));
-    puts("\n");*/
-    i--;
+  int i = 0;
+  while (1) {
+    //scheduler->current_process_report();
+    //puts(itoa(++i));
+    //puts("  ");
+    //i--;
     udelay(3000000); // 3 sec
   }
 }
@@ -155,7 +156,9 @@ void pr_create(){
   process = create_process(pr_test_process, name, strlen(name));
   puts("New process address: ");
   puts(itoa(process));
-  puts("\n");
+  puts(" name: ");
+  puts(process->process_name);
+  //print_curr_memory_state(); // TODO: remove
   scheduler->register_process(process, (void *)(atoi(priority)) ); ///TODO: add possibility to create without registering
 }
 
@@ -216,7 +219,7 @@ shell_t real_time_shell = {
 void run_shell(void){
   puts("\nWelcome to the Framboise priority mini-shell!\n");
   status = shell_loop(&priority_shell);
-  while(status < 2){
+  /*while(status < 2){
     puts("\nWelcome to the Framboise ");
     switch(status){
     case -1:
@@ -228,7 +231,7 @@ void run_shell(void){
       status = shell_loop(&real_time_shell);
       break;
     }
-  }
+    }*/
   puts("Shells terminated with status ");
   puts(itoa(status));
   puts("\n");

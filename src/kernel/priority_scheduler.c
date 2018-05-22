@@ -202,6 +202,7 @@ int remove_by_pid(uint32_t pid){
   for(int i = 0; i <= MAX_PRIORITY; i++){
     found_node = find_node(&run_queue[i], pid);
     if(found_node != 0){
+      free_pcb(found_node->process);
       remove_node(&run_queue[i], found_node);
       break;
     }

@@ -30,6 +30,8 @@ typedef struct pcb {
   char process_name[20];               // The process' name
 } process_control_block_t;
 
+void free_pcb(process_control_block_t * p); // Free the memory allocated to p
+
 // Scheduling tools
 
 typedef struct {
