@@ -98,37 +98,38 @@ typedef struct page {
 } page_t;
 
 
-static page_t * first_free_page;
-static page_t * last_free_page;
+static page_t * first_free_page, * last_free_page;
 static uint32_t num_free_pages;
 
-void push_first_free_page(page_t * p){ // Adds a page in the beginning of the list
-  if(num_free_pages == 0){
-    first_free_page = p;
-    last_free_page = p;
-  }
-  else{
-    p->next = first_free_page;
-    first_free_page = p;
-  }
-  num_free_pages ++;
-}
-
 void push_last_free_page(page_t * p){ // Adds a page in the end of the list
+  p->next = 0;
   if(num_free_pages == 0){
     first_free_page = p;
     last_free_page = p;
+    num_free_pages++;
+    return;
   }
-  else{
-    last_free_page->next = p;
+  if(num_free_pages == 1){
+    first_free_page->next = p;
     last_free_page = p;
+    num_free_pages++;
+    return;
   }
-  num_free_pages ++;
+  last_free_page->next = p;
+  last_free_page = p;
+  num_free_pages++;
 }
 
 page_t * pop_free_page(){ // Pops a page from the beginning of the list
-    if(num_free_pages == 0)
+  if(num_free_pages == 0)
     return 0;
+  if(num_free_pages == 1){
+    page_t * first_page = first_free_page;
+    first_free_page = 0;
+    last_free_page = 0;
+    num_free_pages = 0;
+    return first_page;
+  }
   page_t * first_page = first_free_page;
   page_t * new_first_page = first_free_page->next;
   first_free_page = new_first_page;
@@ -159,10 +160,9 @@ void * alloc_page(void) {
 
     // Get the address the physical page metadata refers to
     page_mem = (void *)((page - all_pages_array) * PAGE_SIZE);
-
     // Zero out the page
     bzero(page_mem, PAGE_SIZE);
-
+   
     return page_mem;
 }
 
@@ -182,18 +182,26 @@ void free_page(void * ptr) {
 void mem_init(atag_t * atags) {
   uint32_t  page_array_len, page_array_end, kernel_pages, i;
   
+  first_free_page = 0;
+  last_free_page = 0;
+  num_free_pages = 0;
+  
   // Get the total number of pages
   mem_size = get_mem_size(atags);
   num_pages = mem_size / PAGE_SIZE;
   
   // Allocate space for all those pages' metadata.  Start this block just after the kernel image is finished
   page_array_len = sizeof(page_t) * num_pages;
-  all_pages_array = (page_t *)&__end;
+  all_pages_array = (page_t *)&__end + KERNEL_STACK_SIZE +IRQ_STACK_SIZE;
   bzero(all_pages_array, page_array_len);
+
+  // Find where the page metadata ends and round up to the nearest page
+  page_array_end = (uint32_t)all_pages_array + page_array_len;
+  page_array_end += page_array_end % PAGE_SIZE ? PAGE_SIZE - (page_array_end % PAGE_SIZE) : 0;
 
   // Iterate over all pages and mark them with the appropriate flags
   // Start with kernel pages
-  kernel_pages = ((uint32_t)&__end) / PAGE_SIZE;
+  kernel_pages = (page_array_end) / PAGE_SIZE;
   for (i = 0; i < kernel_pages; i++) {
     all_pages_array[i].vaddr_mapped = i * PAGE_SIZE;    // Identity map the kernel pages
     all_pages_array[i].flags.allocated = 1;
@@ -214,7 +222,6 @@ void mem_init(atag_t * atags) {
   }
   
   // Initialize the heap
-  page_array_end = (uint32_t)&__end + page_array_len;
   heap_init(page_array_end);
 }
 

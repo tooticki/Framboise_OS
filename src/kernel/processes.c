@@ -78,7 +78,7 @@ void schedule(void) {
   
   // If there are no more processes to run then continue to run the current one
   if(new_thread == 0){ 
-    timer_set(800000); // TODO: change to default 10000
+    timer_set(10000); // TODO: change to default 10000
     ENABLE_INTERRUPTS();
     return;
   }
@@ -88,9 +88,9 @@ void schedule(void) {
   // Implemented in context_switch.S. This never returns, calls
   // set_timer(10000), enables interrupts
   
-  puts("    Scheduling: before switch from  ( pcb "); // TODO: remove
+  /*puts("    Scheduling: before switch from  ( pcb "); // TODO: remove
   puts(itoa(old_thread));
-  puts(" lr ");
+  puts(" sp ");
   puts(itoa(old_thread->saved_state->sp));
   puts(" lr ");
   puts(itoa(old_thread->saved_state->lr));
@@ -98,7 +98,7 @@ void schedule(void) {
   puts(itoa(new_thread));
   puts(" with saved state address ");
   puts(itoa(new_thread->saved_state));
-  puts(" ) ");
+  puts(" ) ");*/
   switch_to_thread(old_thread, new_thread); 
 }
 
@@ -121,11 +121,11 @@ void reap(void){ // Free all resources associated with a process, context switch
 }
 
 int kill(uint32_t pid){
+  DISABLE_INTERRUPTS();
   if (pid == scheduler->current_pid()){
     reap();
     return 1;
   }
-  DISABLE_INTERRUPTS();
   int res = scheduler->remove_by_pid(pid); // return -1 if Not Found, return 1 otherwise; frees memory of the pcb and of its node
   ENABLE_INTERRUPTS();
   return res;

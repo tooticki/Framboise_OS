@@ -154,10 +154,10 @@ void pr_create(){
     return;
   }
   process = create_process(pr_test_process, name, strlen(name));
-  puts("New process address: ");
-  puts(itoa(process));
-  puts(" name: ");
-  puts(process->process_name);
+  // puts("New process address: ");
+  // puts(itoa(process)); TODO: remove
+  //puts(" name: ");
+  //puts(process->process_name);
   //print_curr_memory_state(); // TODO: remove
   scheduler->register_process(process, (void *)(atoi(priority)) ); ///TODO: add possibility to create without registering
 }
